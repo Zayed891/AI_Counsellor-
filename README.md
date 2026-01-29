@@ -2,7 +2,7 @@
 
 > Your personalized AI-powered companion for navigating the study abroad journey.
 
-![AI Counselor Preview](https://github.com/user-attachments/assets/placeholder-image)
+![AI Counselor Preview](https://ai-counsellor-ivory.vercel.app/)
 
 ## 🚀 Overview
 
