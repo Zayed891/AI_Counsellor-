@@ -246,3 +246,19 @@ create policy "Users can update own tasks" on public.tasks
 
 create policy "Users can delete own tasks" on public.tasks
   for delete using (auth.uid() = user_id);
+
+-- MIGRATION FIXES
+-- Ensure onboarding_complete defaults to false and fix any existing nulls
+do $$
+begin
+    -- Ensure column exists with default false
+    if not exists (select 1 from information_schema.columns where table_name = 'profiles' and column_name = 'onboarding_complete') then
+        alter table public.profiles add column onboarding_complete boolean default false;
+    else
+        -- If it exists but might have nulls or wrong default, update it
+        alter table public.profiles alter column onboarding_complete set default false;
+    end if;
+    
+    -- Fix existing null values to false
+    update public.profiles set onboarding_complete = false where onboarding_complete is null;
+end $$;
