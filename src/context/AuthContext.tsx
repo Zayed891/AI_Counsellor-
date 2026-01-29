@@ -56,10 +56,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 .eq('user_id', userId)
                 .single()
 
-            if (error) throw error
-            setProfile(data)
+            if (error) {
+                // If profile doesn't exist yet, we shouldn't throw, just set null
+                if (error.code === 'PGRST116') {
+                    setProfile(null)
+                    return
+                }
+                throw error
+            }
+
+            // Ensure onboarding_complete is strictly boolean
+            const safeProfile = {
+                ...data,
+                onboarding_complete: data?.onboarding_complete === true
+            }
+
+            setProfile(safeProfile)
         } catch (error) {
             console.error('Error fetching profile:', error)
+            // Error state should probably not be null if we want to block access, 
+            // but for now keeping pattern consistent.
         } finally {
             setLoading(false)
         }
