@@ -43,7 +43,11 @@ export default function Counselor() {
         scrollToBottom()
     }, [messages])
 
-    const isOnboardingComplete = profile?.onboarding_complete
+    // Verify profile completeness not just by flag, but by actual data presence
+    // This protects against DB default value issues in production
+    const isOnboardingComplete = profile?.onboarding_complete === true &&
+        !!profile?.study_level &&
+        (profile?.target_countries?.length ?? 0) > 0
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
