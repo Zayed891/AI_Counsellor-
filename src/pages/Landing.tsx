@@ -200,7 +200,7 @@ export default function Landing() {
                         <span className="font-bold text-lg tracking-tight">AI Counsellor</span>
                     </div>
                     <p className="text-sm font-mono text-neutral-500">
-                        © 2025 AI Counsellor. Built for Humanity Founders Hackathon.
+                        © 2026 AI Counsellor. Built by Jayed Akhtar.
                     </p>
                 </div>
             </footer>
