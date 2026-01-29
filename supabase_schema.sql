@@ -153,6 +153,10 @@ alter table public.profiles enable row level security;
 alter table public.universities enable row level security;
 alter table public.shortlist enable row level security;
 
+-- Drop conflicting policies if they exist
+drop policy if exists "Service role can create profiles" on public.profiles;
+drop policy if exists "Users can insert own profile" on public.profiles;
+
 -- Profiles: Users can view and update their own profile
 create policy "Users can view own profile" on public.profiles
   for select using (auth.uid() = user_id);
@@ -160,8 +164,9 @@ create policy "Users can view own profile" on public.profiles
 create policy "Users can update own profile" on public.profiles
   for update using (auth.uid() = user_id);
 
+-- Allow both authenticated users and service role to create profiles (unified policy)
 create policy "Users can insert own profile" on public.profiles
-  for insert with check (auth.uid() = user_id);
+  for insert with check (auth.role() = 'service_role' or auth.uid() = user_id);
 
 -- Universities: Everyone can view, authenticated users can insert (via upsert)
 create policy "Universities are viewable by everyone" on public.universities

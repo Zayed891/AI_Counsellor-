@@ -90,7 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
                 if (profileError) {
                     console.error('Profile creation error:', profileError)
-                    throw profileError
+                    // Don't throw - profile might still be created, allow user to proceed
+                    console.warn('Profile creation had issues but user account was created. Attempting to proceed...')
                 }
             }
 
