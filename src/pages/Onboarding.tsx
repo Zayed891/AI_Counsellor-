@@ -59,14 +59,12 @@ interface OnboardingData {
 }
 
 const STEPS = [
-    { id: 1, title: 'Name', icon: User, question: "Let's start! What is your full name?" },
-    { id: 2, title: 'Email', icon: User, question: "Great! What is your email address?" },
-    { id: 3, title: 'Phone', icon: User, question: "And finally, what is your phone number?" },
-    { id: 4, title: 'Academic', icon: BookOpen, question: "Thanks! Now, what is your current degree and major? (e.g., Bachelors in CS)" },
-    { id: 5, title: 'Test Scores', icon: FileText, question: "Have you taken any exams like IELTS, TOEFL, or GRE? If so, what were your scores?" },
-    { id: 6, title: 'Financial', icon: DollarSign, question: "What is your estimated annual budget range in USD?" },
-    { id: 7, title: 'Preferences', icon: Globe, question: "Which countries are you targeting for your studies?" },
-    { id: 8, title: 'Documents', icon: FileCheck, question: "Finally, do you have your Passport or Transcripts ready?" },
+    { id: 1, title: 'Personal', icon: User, question: "Let's start! What is your full name?" },
+    { id: 2, title: 'Academic', icon: BookOpen, question: "Thanks! Now, what is your current degree and major? (e.g., Bachelors in CS)" },
+    { id: 3, title: 'Test Scores', icon: FileText, question: "Have you taken any exams like IELTS, TOEFL, or GRE? If so, what were your scores?" },
+    { id: 4, title: 'Financial', icon: DollarSign, question: "What is your estimated annual budget range in USD?" },
+    { id: 5, title: 'Preferences', icon: Globe, question: "Which countries are you targeting for your studies?" },
+    { id: 6, title: 'Documents', icon: FileCheck, question: "Finally, do you have your Passport or Transcripts ready?" },
 ]
 
 const COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Ireland', 'New Zealand', 'Singapore']
@@ -78,6 +76,7 @@ export default function Onboarding() {
     const { profile, updateProfile } = useAuth()
     const navigate = useNavigate()
     const [currentStep, setCurrentStep] = useState(1)
+    const [subStep, setSubStep] = useState(0) // 0: Name, 1: Email, 2: Phone (Only for Step 1)
     const [isInterviewMode, setIsInterviewMode] = useState(false)
     const [aiProcessing, setAiProcessing] = useState(false)
 
@@ -150,12 +149,21 @@ export default function Onboarding() {
             const timer = setTimeout(() => {
                 const step = STEPS.find(s => s.id === currentStep)
                 if (step) {
-                    speak(step.question)
+                    let questionToAsk = step.question
+
+                    // Custom questions for Step 1 sub-steps
+                    if (currentStep === 1) {
+                        if (subStep === 0) questionToAsk = "Let's start! What is your full name?"
+                        else if (subStep === 1) questionToAsk = "Great! And what is your email address?"
+                        else if (subStep === 2) questionToAsk = "Finally for this section, what is your phone number?"
+                    }
+
+                    speak(questionToAsk)
                 }
             }, 500)
             return () => clearTimeout(timer)
         }
-    }, [isInterviewMode, currentStep])
+    }, [isInterviewMode, currentStep, subStep])
 
     // Auto-listen after speaking? (Optional, maybe manual click is safer for now)
 
@@ -167,38 +175,24 @@ export default function Onboarding() {
         stopListening()
         setAiProcessing(true)
         const fieldsMap: Record<number, string[]> = {
-            1: ['name'],
-            2: ['email'],
-            3: ['phone'],
-            4: ['currentDegree', 'major', 'gpa', 'educationBoard'],
-            5: ['ielts', 'toefl', 'gre', 'gmat', 'sat'],
-            6: ['budgetMin', 'budgetMax', 'fundingSource'],
-            7: ['targetCountries', 'intakeYear', 'intakeSeason', 'studyLevel'],
-            8: ['hasPassport', 'hasTranscript', 'hasSop', 'hasLor']
+            1: ['name', 'email', 'phone'],
+            2: ['currentDegree', 'major', 'gpa', 'educationBoard'],
+            3: ['ielts', 'toefl', 'gre', 'gmat', 'sat'],
+            4: ['budgetMin', 'budgetMax', 'fundingSource'],
+            5: ['targetCountries', 'intakeYear', 'intakeSeason', 'studyLevel'],
+            6: ['hasPassport', 'hasTranscript', 'hasSop', 'hasLor']
         }
-        const targetFields = fieldsMap[currentStep] || []
+        let targetFields = fieldsMap[currentStep] || []
 
-        // Construct a prompt for the AI to extract data
-        const extractionPrompt = `
-        You are an intelligent data extractor. 
-        Current Step: ${currentStep} (${STEPS[currentStep - 1].title}).
-        User Input: "${transcript}"
-        
-        Extract relevant fields for this step into JSON format.
-        
-        FIELDS TO SEARCH FOR BY STEP:
-        Step 1 (Name): name.
-        Step 2 (Email): email.
-        Step 3 (Phone): phone.
-        Step 4 (Academic): currentDegree, major, gpa (number), educationBoard.
-        Step 5 (Tests): ielts, toefl, gre, gmat, sat (all numbers).
-        Step 6 (Financial): budgetMin, budgetMax, fundingSource.
-        Step 7 (Preferences): targetCountries (array), intakeYear, intakeSeason, studyLevel.
-        Step 8 (Documents): hasPassport, hasTranscript, hasSop, hasLor (booleans).
+        // DYNAMIC TARGETING FOR Step 1 (Personal)
+        // To prevent hallucination/overwriting, we restrict the AI to look ONLY for the current sub-step's field.
+        if (currentStep === 1) {
+            if (subStep === 0) targetFields = ['name']
+            else if (subStep === 1) targetFields = ['email']
+            else if (subStep === 2) targetFields = ['phone']
+        }
 
-        Return ONLY a legitimate JSON object. Do not wrap in markdown.
-        Example: {"name": "John"}
-        `
+
 
         try {
             const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY
@@ -221,11 +215,19 @@ export default function Onboarding() {
                     model: 'openai/gpt-3.5-turbo',
                     messages: [
                         {
-                            role: 'user',
-                            content: `TASK: Extract data from user input into JSON.
+                            role: 'system',
+                            content: `You are a strict data extraction assistant.
+                            TASK: Extract specific data fields from the user's spoken input into a JSON object.
+                            
                             CONTEXT: Step ${currentStep} (${STEPS[currentStep - 1].title}).
                             INPUT: "${transcript}"
                             TARGET FIELDS: ${targetFields.join(', ')}
+                            
+                            RULES:
+                            1. Extract ONLY the "Target Fields" listed above. Ignore all other information.
+                            2. If a field is NOT explicitly present in the input, OMIT it from the JSON.
+                            3. Do NOT return empty strings ("") or nulls.
+                            4. Do NOT hallucinate. (e.g., do not put a phone number in the name field).
                             
                             Return ONLY valid JSON. No markdown.`
                         }
@@ -263,8 +265,18 @@ export default function Onboarding() {
             speak("Got it!")
 
             // Wait then Move next
+            // Wait then Move next
             setTimeout(() => {
-                handleNext()
+                // If Step 1, handle sub-steps
+                if (currentStep === 1) {
+                    if (subStep < 2) {
+                        setSubStep(prev => prev + 1)
+                    } else {
+                        handleNext()
+                    }
+                } else {
+                    handleNext()
+                }
                 resetTranscript()
             }, 1000)
 
@@ -291,8 +303,18 @@ export default function Onboarding() {
         }))
     }
     const handleNext = async () => {
-        if (currentStep < 8) {
+        // Special handling for Step 1:
+        // If Interview Mode is ON, we force sequential sub-steps (Name -> Email -> Phone).
+        // If Interview Mode is OFF (Manual), we let the user fill all and click Next to proceed to Step 2 immediately.
+        if (currentStep === 1 && isInterviewMode && subStep < 2) {
+            setSubStep(prev => prev + 1)
+            return
+        }
+
+        if (currentStep < 6) {
             setCurrentStep(prev => prev + 1)
+            // Reset subStep if we are somehow revisiting step 1
+            if (currentStep + 1 === 1) setSubStep(0)
         } else {
             finishOnboarding()
         }
@@ -341,7 +363,7 @@ export default function Onboarding() {
         }
     }
 
-    const progress = (currentStep / 8) * 100
+    const progress = (currentStep / 6) * 100
 
     return (
         <div className="min-h-screen bg-transparent relative">
@@ -359,6 +381,8 @@ export default function Onboarding() {
                             const newState = !isInterviewMode
                             setIsInterviewMode(newState)
                             if (newState) {
+                                // Reset subStep if restarting on Step 1 to ensure flow starts from Name
+                                if (currentStep === 1) setSubStep(0)
                                 resetTranscript()
                                 // speak() is handled by useEffect
                             } else {
@@ -395,7 +419,12 @@ export default function Onboarding() {
                         {/* Question / Transcript */}
                         <div className="space-y-6">
                             <h2 className="text-3xl font-light text-white leading-relaxed">
-                                {isListening && transcript ? `"${transcript}"` : STEPS[currentStep - 1].question}
+                                {isListening && transcript
+                                    ? `"${transcript}"`
+                                    : (currentStep === 1
+                                        ? (subStep === 0 ? "Let's start! What is your full name?" : subStep === 1 ? "Great! And what is your email address?" : "Finally for this section, what is your phone number?")
+                                        : STEPS[currentStep - 1].question)
+                                }
                             </h2>
                             {lastError && (
                                 <div className="text-red-500 bg-red-500/10 p-4 rounded-xl border border-red-500/20 mb-4 animate-in fade-in slide-in-from-bottom-2">
@@ -483,63 +512,55 @@ export default function Onboarding() {
                                     {STEPS[currentStep - 1].title}
                                 </CardTitle>
                                 <CardDescription className="text-neutral-400 mt-2">
-                                    {currentStep === 1 && 'What is your full name?'}
-                                    {currentStep === 2 && 'What is your email address?'}
-                                    {currentStep === 3 && 'What is your phone number?'}
-                                    {currentStep === 4 && 'Share your educational background'}
-                                    {currentStep === 5 && 'Enter your standardized test scores (optional)'}
-                                    {currentStep === 6 && 'Set your budget and funding preferences'}
-                                    {currentStep === 7 && 'Choose your target countries and intake'}
-                                    {currentStep === 8 && 'Check your document readiness'}
+                                    {currentStep === 1 && 'Tell us about yourself'}
+                                    {currentStep === 2 && 'Share your educational background'}
+                                    {currentStep === 3 && 'Enter your standardized test scores (optional)'}
+                                    {currentStep === 4 && 'Set your budget and funding preferences'}
+                                    {currentStep === 5 && 'Choose your target countries and intake'}
+                                    {currentStep === 6 && 'Check your document readiness'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-8 pt-8">
-                                {/* Step 1: Name */}
+                                {/* Step 1: Personal */}
                                 {currentStep === 1 && (
-                                    <div className="space-y-3">
-                                        <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Full Name</Label>
-                                        <Input
-                                            value={data.name}
-                                            onChange={(e) => updateField('name', e.target.value)}
-                                            placeholder="John Doe"
-                                            className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                            autoFocus
-                                        />
-                                    </div>
+                                    <>
+                                        <div className={`space-y-3 transition-opacity ${!isInterviewMode || subStep >= 0 ? 'opacity-100' : 'opacity-50'}`}>
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Full Name</Label>
+                                            <Input
+                                                value={data.name}
+                                                onChange={(e) => updateField('name', e.target.value)}
+                                                placeholder="John Doe"
+                                                className={`bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12 ${isInterviewMode && subStep === 0 ? 'border-white/50' : ''}`}
+                                                autoFocus={subStep === 0}
+                                            />
+                                        </div>
+                                        <div className={`space-y-3 transition-opacity ${!isInterviewMode || subStep >= 1 ? 'opacity-100' : 'opacity-50'}`}>
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Email Address</Label>
+                                            <Input
+                                                type="email"
+                                                value={data.email}
+                                                onChange={(e) => updateField('email', e.target.value)}
+                                                placeholder="you@example.com"
+                                                className={`bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12 ${isInterviewMode && subStep === 1 ? 'border-white/50' : ''}`}
+                                                autoFocus={subStep === 1}
+                                            />
+                                        </div>
+                                        <div className={`space-y-3 transition-opacity ${!isInterviewMode || subStep >= 2 ? 'opacity-100' : 'opacity-50'}`}>
+                                            <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Phone Number</Label>
+                                            <Input
+                                                type="tel"
+                                                value={data.phone}
+                                                onChange={(e) => updateField('phone', e.target.value)}
+                                                placeholder="+1 234 567 8900"
+                                                className={`bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12 ${isInterviewMode && subStep === 2 ? 'border-white/50' : ''}`}
+                                                autoFocus={subStep === 2}
+                                            />
+                                        </div>
+                                    </>
                                 )}
 
-                                {/* Step 2: Email */}
+                                {/* Step 2: Academic */}
                                 {currentStep === 2 && (
-                                    <div className="space-y-3">
-                                        <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Email Address</Label>
-                                        <Input
-                                            type="email"
-                                            value={data.email}
-                                            onChange={(e) => updateField('email', e.target.value)}
-                                            placeholder="you@example.com"
-                                            className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                            autoFocus
-                                        />
-                                    </div>
-                                )}
-
-                                {/* Step 3: Phone */}
-                                {currentStep === 3 && (
-                                    <div className="space-y-3">
-                                        <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Phone Number</Label>
-                                        <Input
-                                            type="tel"
-                                            value={data.phone}
-                                            onChange={(e) => updateField('phone', e.target.value)}
-                                            placeholder="+1 234 567 8900"
-                                            className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                            autoFocus
-                                        />
-                                    </div>
-                                )}
-
-                                {/* Step 4: Academic */}
-                                {currentStep === 4 && (
                                     <>
                                         <div className="space-y-3">
                                             <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Current/Highest Degree</Label>
@@ -584,8 +605,8 @@ export default function Onboarding() {
                                     </>
                                 )}
 
-                                {/* Step 5: Test Scores */}
-                                {currentStep === 5 && (
+                                {/* Step 3: Test Scores */}
+                                {currentStep === 3 && (
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">IELTS Score</Label>
@@ -646,8 +667,8 @@ export default function Onboarding() {
                                     </div>
                                 )}
 
-                                {/* Step 6: Financial */}
-                                {currentStep === 6 && (
+                                {/* Step 4: Financial */}
+                                {currentStep === 4 && (
                                     <>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-3">
@@ -692,8 +713,8 @@ export default function Onboarding() {
                                     </>
                                 )}
 
-                                {/* Step 7: Preferences */}
-                                {currentStep === 7 && (
+                                {/* Step 5: Preferences */}
+                                {currentStep === 5 && (
                                     <>
                                         <div className="space-y-3">
                                             <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Target Countries</Label>
@@ -763,8 +784,8 @@ export default function Onboarding() {
                                     </>
                                 )}
 
-                                {/* Step 8: Documents */}
-                                {currentStep === 8 && (
+                                {/* Step 6: Documents */}
+                                {currentStep === 6 && (
                                     <div className="space-y-4">
                                         <p className="text-sm text-neutral-400">
                                             Check the documents you already have ready:
@@ -812,7 +833,7 @@ export default function Onboarding() {
                                 <ArrowLeft size={18} /> BACK
                             </Button>
                             <Button variant="sharp" onClick={handleNext} className="gap-2 px-8 cursor-pointer">
-                                {currentStep === 8 ? 'COMPLETE SETUP' : 'NEXT'} <ArrowRight size={18} />
+                                {currentStep === 6 ? 'COMPLETE SETUP' : (isInterviewMode && currentStep === 1 && subStep < 2 ? 'NEXT FIELD' : 'NEXT')} <ArrowRight size={18} />
                             </Button>
                         </div>
                     </div>
