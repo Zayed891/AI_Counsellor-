@@ -59,12 +59,14 @@ interface OnboardingData {
 }
 
 const STEPS = [
-    { id: 1, title: 'Personal', icon: User, question: "Let's start! What is your full name, email address, and phone number?" },
-    { id: 2, title: 'Academic', icon: BookOpen, question: "Great! What is your current degree and major? (e.g., Bachelors in CS)" },
-    { id: 3, title: 'Test Scores', icon: FileText, question: "Have you taken any exams like IELTS, TOEFL, or GRE? If so, what were your scores?" },
-    { id: 4, title: 'Financial', icon: DollarSign, question: "What is your estimated annual budget range in USD?" },
-    { id: 5, title: 'Preferences', icon: Globe, question: "Which countries are you targeting for your studies?" },
-    { id: 6, title: 'Documents', icon: FileCheck, question: "Finally, do you have your Passport or Transcripts ready?" },
+    { id: 1, title: 'Name', icon: User, question: "Let's start! What is your full name?" },
+    { id: 2, title: 'Email', icon: User, question: "Great! What is your email address?" },
+    { id: 3, title: 'Phone', icon: User, question: "And finally, what is your phone number?" },
+    { id: 4, title: 'Academic', icon: BookOpen, question: "Thanks! Now, what is your current degree and major? (e.g., Bachelors in CS)" },
+    { id: 5, title: 'Test Scores', icon: FileText, question: "Have you taken any exams like IELTS, TOEFL, or GRE? If so, what were your scores?" },
+    { id: 6, title: 'Financial', icon: DollarSign, question: "What is your estimated annual budget range in USD?" },
+    { id: 7, title: 'Preferences', icon: Globe, question: "Which countries are you targeting for your studies?" },
+    { id: 8, title: 'Documents', icon: FileCheck, question: "Finally, do you have your Passport or Transcripts ready?" },
 ]
 
 const COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Ireland', 'New Zealand', 'Singapore']
@@ -165,12 +167,14 @@ export default function Onboarding() {
         stopListening()
         setAiProcessing(true)
         const fieldsMap: Record<number, string[]> = {
-            1: ['name', 'phone', 'email'],
-            2: ['currentDegree', 'major', 'gpa', 'educationBoard'],
-            3: ['ielts', 'toefl', 'gre', 'gmat', 'sat'],
-            4: ['budgetMin', 'budgetMax', 'fundingSource'],
-            5: ['targetCountries', 'intakeYear', 'intakeSeason', 'studyLevel'],
-            6: ['hasPassport', 'hasTranscript', 'hasSop', 'hasLor']
+            1: ['name'],
+            2: ['email'],
+            3: ['phone'],
+            4: ['currentDegree', 'major', 'gpa', 'educationBoard'],
+            5: ['ielts', 'toefl', 'gre', 'gmat', 'sat'],
+            6: ['budgetMin', 'budgetMax', 'fundingSource'],
+            7: ['targetCountries', 'intakeYear', 'intakeSeason', 'studyLevel'],
+            8: ['hasPassport', 'hasTranscript', 'hasSop', 'hasLor']
         }
         const targetFields = fieldsMap[currentStep] || []
 
@@ -183,15 +187,17 @@ export default function Onboarding() {
         Extract relevant fields for this step into JSON format.
         
         FIELDS TO SEARCH FOR BY STEP:
-        Step 1 (Personal): name, phone, email.
-        Step 2 (Academic): currentDegree, major, gpa (number), educationBoard.
-        Step 3 (Tests): ielts, toefl, gre, gmat, sat (all numbers).
-        Step 4 (Financial): budgetMin, budgetMax, fundingSource.
-        Step 5 (Preferences): targetCountries (array), intakeYear, intakeSeason, studyLevel.
-        Step 6 (Documents): hasPassport, hasTranscript, hasSop, hasLor (booleans).
+        Step 1 (Name): name.
+        Step 2 (Email): email.
+        Step 3 (Phone): phone.
+        Step 4 (Academic): currentDegree, major, gpa (number), educationBoard.
+        Step 5 (Tests): ielts, toefl, gre, gmat, sat (all numbers).
+        Step 6 (Financial): budgetMin, budgetMax, fundingSource.
+        Step 7 (Preferences): targetCountries (array), intakeYear, intakeSeason, studyLevel.
+        Step 8 (Documents): hasPassport, hasTranscript, hasSop, hasLor (booleans).
 
         Return ONLY a legitimate JSON object. Do not wrap in markdown.
-        Example: {"name": "John", "phone": "1234567890"}
+        Example: {"name": "John"}
         `
 
         try {
@@ -285,7 +291,7 @@ export default function Onboarding() {
         }))
     }
     const handleNext = async () => {
-        if (currentStep < 6) {
+        if (currentStep < 8) {
             setCurrentStep(prev => prev + 1)
         } else {
             finishOnboarding()
@@ -335,7 +341,7 @@ export default function Onboarding() {
         }
     }
 
-    const progress = (currentStep / 6) * 100
+    const progress = (currentStep / 8) * 100
 
     return (
         <div className="min-h-screen bg-transparent relative">
@@ -431,7 +437,7 @@ export default function Onboarding() {
                         </div>
 
                         <p className="text-neutral-500 text-sm">
-                            Step {currentStep} of 6 • Manual overrides available by closing Interview Mode
+                            Step {currentStep} of 8 • Manual overrides available by closing Interview Mode
                         </p>
                     </div>
                 </div>
@@ -477,53 +483,63 @@ export default function Onboarding() {
                                     {STEPS[currentStep - 1].title}
                                 </CardTitle>
                                 <CardDescription className="text-neutral-400 mt-2">
-                                    {currentStep === 1 && 'Tell us about yourself'}
-                                    {currentStep === 2 && 'Share your educational background'}
-                                    {currentStep === 3 && 'Enter your standardized test scores (optional)'}
-                                    {currentStep === 4 && 'Set your budget and funding preferences'}
-                                    {currentStep === 5 && 'Choose your target countries and intake'}
-                                    {currentStep === 6 && 'Check your document readiness'}
+                                    {currentStep === 1 && 'What is your full name?'}
+                                    {currentStep === 2 && 'What is your email address?'}
+                                    {currentStep === 3 && 'What is your phone number?'}
+                                    {currentStep === 4 && 'Share your educational background'}
+                                    {currentStep === 5 && 'Enter your standardized test scores (optional)'}
+                                    {currentStep === 6 && 'Set your budget and funding preferences'}
+                                    {currentStep === 7 && 'Choose your target countries and intake'}
+                                    {currentStep === 8 && 'Check your document readiness'}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-8 pt-8">
-                                {/* Step 1: Personal */}
+                                {/* Step 1: Name */}
                                 {currentStep === 1 && (
-                                    <>
-                                        <div className="space-y-3">
-                                            <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Full Name</Label>
-                                            <Input
-                                                value={data.name}
-                                                onChange={(e) => updateField('name', e.target.value)}
-                                                placeholder="John Doe"
-                                                className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Email Address</Label>
-                                            <Input
-                                                type="email"
-                                                value={data.email}
-                                                onChange={(e) => updateField('email', e.target.value)}
-                                                placeholder="you@example.com"
-                                                className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-
-                                            />
-                                        </div>
-                                        <div className="space-y-3">
-                                            <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Phone Number</Label>
-                                            <Input
-                                                type="tel"
-                                                value={data.phone}
-                                                onChange={(e) => updateField('phone', e.target.value)}
-                                                placeholder="+1 234 567 8900"
-                                                className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                            />
-                                        </div>
-                                    </>
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Full Name</Label>
+                                        <Input
+                                            value={data.name}
+                                            onChange={(e) => updateField('name', e.target.value)}
+                                            placeholder="John Doe"
+                                            className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
+                                            autoFocus
+                                        />
+                                    </div>
                                 )}
 
-                                {/* Step 2: Academic */}
+                                {/* Step 2: Email */}
                                 {currentStep === 2 && (
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Email Address</Label>
+                                        <Input
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => updateField('email', e.target.value)}
+                                            placeholder="you@example.com"
+                                            className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
+                                            autoFocus
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Step 3: Phone */}
+                                {currentStep === 3 && (
+                                    <div className="space-y-3">
+                                        <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Phone Number</Label>
+                                        <Input
+                                            type="tel"
+                                            value={data.phone}
+                                            onChange={(e) => updateField('phone', e.target.value)}
+                                            placeholder="+1 234 567 8900"
+                                            className="bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
+                                            autoFocus
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Step 4: Academic */}
+                                {currentStep === 4 && (
                                     <>
                                         <div className="space-y-3">
                                             <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Current/Highest Degree</Label>
@@ -568,8 +584,8 @@ export default function Onboarding() {
                                     </>
                                 )}
 
-                                {/* Step 3: Test Scores */}
-                                {currentStep === 3 && (
+                                {/* Step 5: Test Scores */}
+                                {currentStep === 5 && (
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-3">
                                             <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">IELTS Score</Label>
@@ -630,8 +646,8 @@ export default function Onboarding() {
                                     </div>
                                 )}
 
-                                {/* Step 4: Financial */}
-                                {currentStep === 4 && (
+                                {/* Step 6: Financial */}
+                                {currentStep === 6 && (
                                     <>
                                         <div className="grid grid-cols-2 gap-6">
                                             <div className="space-y-3">
@@ -676,8 +692,8 @@ export default function Onboarding() {
                                     </>
                                 )}
 
-                                {/* Step 5: Preferences */}
-                                {currentStep === 5 && (
+                                {/* Step 7: Preferences */}
+                                {currentStep === 7 && (
                                     <>
                                         <div className="space-y-3">
                                             <Label className="text-xs font-mono uppercase tracking-wider text-neutral-500">Target Countries</Label>
@@ -747,8 +763,8 @@ export default function Onboarding() {
                                     </>
                                 )}
 
-                                {/* Step 6: Documents */}
-                                {currentStep === 6 && (
+                                {/* Step 8: Documents */}
+                                {currentStep === 8 && (
                                     <div className="space-y-4">
                                         <p className="text-sm text-neutral-400">
                                             Check the documents you already have ready:
@@ -796,7 +812,7 @@ export default function Onboarding() {
                                 <ArrowLeft size={18} /> BACK
                             </Button>
                             <Button variant="sharp" onClick={handleNext} className="gap-2 px-8 cursor-pointer">
-                                {currentStep === 6 ? 'COMPLETE SETUP' : 'NEXT'} <ArrowRight size={18} />
+                                {currentStep === 8 ? 'COMPLETE SETUP' : 'NEXT'} <ArrowRight size={18} />
                             </Button>
                         </div>
                     </div>
