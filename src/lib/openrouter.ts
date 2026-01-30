@@ -4,7 +4,7 @@ const SITE_URL = import.meta.env.VITE_SITE_URL || 'http://localhost:5173'
 const SITE_NAME = 'AI Study Counselor'
 
 // Default model - Claude follows instructions better
-const DEFAULT_MODEL = 'anthropic/claude-3-haiku'
+export const DEFAULT_MODEL = 'openai/gpt-3.5-turbo' // Standard, reliable model
 
 export interface ChatMessage {
     role: 'user' | 'assistant'
@@ -18,7 +18,7 @@ export interface AIAction {
 
 export interface AIResponse {
     message: string
-    action?: AIAction
+    actions?: AIAction[]
 }
 
 const buildSystemPrompt = (profile: Profile | null, shortlist: any[]) => {
@@ -49,7 +49,16 @@ ${shortlist.map(s => `- ${s.university?.name} (${s.university?.country}) - Categ
 ${profileInfo}
 ${shortlistInfo}
 
-You can take actions by including an action tag at the end of your response.
+You can take actions by including an action tag at the end of your response or after a list item.
+
+IMPORTANT: When recommending universities or listing items, you MUST write the item name in the text description FIRST, and then append the action tag on a new line or at the end. Do NOT hide the information inside the tag.
+
+CORRECT FORMAT:
+1. **University of Oxford** - A top-tier university suitable for your profile.
+[ACTION:ADD_UNIVERSITY|name=University of Oxford|category=reach]
+
+INCORRECT FORMAT (Do NOT do this):
+1. [ACTION:ADD_UNIVERSITY|name=University of Oxford] (This leaves the text blank!)
 
 AVAILABLE ACTIONS:
 
@@ -86,33 +95,60 @@ User: "Add a task to write my SOP"
 Response: Added to your to-do list!
 [ACTION:ADD_TODO|title=Write Statement of Purpose|category=documents]
 
-IMPORTANT: Always include the [ACTION:...] tag at the end when user asks to add or create something.`
+User: "Recommend 2 universities"
+Response: Here are two options:
+
+1. **Stanford University** - Great for CS.
+[ACTION:ADD_UNIVERSITY|name=Stanford University|category=reach]
+
+2. **Arizona State University** - Good safety option.
+[ACTION:ADD_UNIVERSITY|name=Arizona State University|category=safety]
+`
 }
 
-// Parse action from AI response
-function parseAction(text: string): AIAction | undefined {
-    // First try to find explicit action tags
-    const actionMatch = text.match(/\[ACTION[:\s]*(\w+)[|\s]?(.*?)\]/i)
+// Parse actions from AI response - returns Array
+function parseActions(text: string): AIAction[] {
+    const actions: AIAction[] = []
 
-    console.log('[OpenRouter] Parsing action from:', text.substring(Math.max(0, text.length - 100)))
-    console.log('[OpenRouter] Action match:', actionMatch)
+    // Find all explicit action tags including multi-line
+    const actionRegex = /\[ACTION:([\s\S]*?)\]/gi
+    let match
 
-    if (actionMatch) {
-        return parseActionTag(actionMatch)
+    while ((match = actionRegex.exec(text)) !== null) {
+        const innerContent = match[1].trim()
+        const splitterIndex = innerContent.indexOf('|')
+
+        let type = ''
+        let paramsStr = ''
+
+        if (splitterIndex !== -1) {
+            type = innerContent.substring(0, splitterIndex).trim()
+            paramsStr = innerContent.substring(splitterIndex + 1).trim()
+        } else {
+            type = innerContent.trim()
+        }
+
+        const parsed = parseActionTagInternal(type, paramsStr)
+        if (parsed) actions.push(parsed)
     }
 
-    // Fallback: Try to detect intent from natural language
-    console.log('[OpenRouter] No action tag found, trying intent detection...')
-    return detectIntentFromText(text)
+    if (actions.length > 0) {
+        return actions
+    }
+
+    // Fallback: Try to detect intent from natural language (only if no explicit tags)
+    console.log('[OpenRouter] No action tags found, trying intent detection...')
+    const intent = detectIntentFromText(text)
+    return intent ? [intent] : []
 }
 
-// Parse explicit action tag
-function parseActionTag(actionMatch: RegExpMatchArray): AIAction | undefined {
-    const actionType = actionMatch[1].toUpperCase()
+// Internal helper to parse type and params
+function parseActionTagInternal(type: string, paramsStr: string): AIAction | undefined {
+    const actionType = type.toUpperCase()
     const params: Record<string, any> = {}
 
-    if (actionMatch[2]) {
-        const paramPairs = actionMatch[2].split('|')
+    if (paramsStr) {
+        const paramPairs = paramsStr.split('|')
         for (const pair of paramPairs) {
             const [key, value] = pair.split('=')
             if (key && value) {
@@ -239,7 +275,8 @@ function detectIntentFromText(text: string): AIAction | undefined {
 
 // Remove action tag from message for display
 function cleanMessage(text: string): string {
-    return text.replace(/\[ACTION:.*?\]/g, '').trim()
+    // Replace valid and potentially partial ACTION tags if they look like system instructions
+    return text.replace(/\[ACTION:[\s\S]*?\]/gi, '').trim()
 }
 
 export async function sendChatMessage(
@@ -294,12 +331,12 @@ To get personalized AI recommendations and ACTIONS, add your OpenRouter API key 
         const fullText = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response."
 
         // Parse action
-        const action = parseAction(fullText)
+        const actions = parseActions(fullText)
         const cleanedMessage = cleanMessage(fullText)
 
         return {
             message: cleanedMessage,
-            action
+            actions
         }
 
     } catch (error) {

@@ -75,7 +75,7 @@ export default function Shortlist() {
 
     const renderUniversityCard = (item: typeof shortlist[0]) => (
         <Card key={item.id} className="bg-[#0A0A0A] border-white/10 hover:border-white/30 transition-all duration-300 group">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
                 <div className="flex items-start justify-between mb-6">
                     <div className="w-12 h-12 bg-neutral-900 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors duration-300">
                         <GraduationCap size={24} />
@@ -236,16 +236,16 @@ export default function Shortlist() {
         <div className="min-h-screen">
             <Navbar />
 
-            <main className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-20">
+            <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 border-b border-white/10 pb-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-10 border-b border-white/10 pb-6 sm:pb-8">
                     <div>
-                        <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 text-white tracking-tight">Your Shortlist</h1>
-                        <p className="text-neutral-400 text-lg">
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-4 text-white tracking-tight">Your Shortlist</h1>
+                        <p className="text-neutral-400 text-sm sm:text-lg">
                             {shortlist.length} universities shortlisted for your applications.
                         </p>
                     </div>
-                    <Button variant="sharp" asChild className="h-12 px-8">
+                    <Button variant="sharp" asChild className="h-12 px-8 w-full md:w-auto">
                         <Link to="/discover">
                             ADD MORE <ArrowRight size={18} className="ml-2" />
                         </Link>
@@ -272,8 +272,8 @@ export default function Shortlist() {
                         {/* Reach Universities */}
                         {reachUniversities.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="px-4 py-2 bg-neutral-900 border border-white/10 text-white font-mono text-sm uppercase tracking-wider">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+                                    <div className="px-4 py-2 bg-neutral-900 border border-white/10 text-white font-mono text-sm uppercase tracking-wider w-fit">
                                         REACH
                                     </div>
                                     <span className="text-neutral-500 text-sm">
@@ -289,8 +289,8 @@ export default function Shortlist() {
                         {/* Target Universities */}
                         {targetUniversities.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="px-4 py-2 bg-neutral-900 border border-white/10 text-white font-mono text-sm uppercase tracking-wider">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+                                    <div className="px-4 py-2 bg-neutral-900 border border-white/10 text-white font-mono text-sm uppercase tracking-wider w-fit">
                                         TARGET
                                     </div>
                                     <span className="text-neutral-500 text-sm">
@@ -306,8 +306,8 @@ export default function Shortlist() {
                         {/* Safety Universities */}
                         {safetyUniversities.length > 0 && (
                             <section>
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="px-4 py-2 bg-neutral-900 border border-white/10 text-white font-mono text-sm uppercase tracking-wider">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
+                                    <div className="px-4 py-2 bg-neutral-900 border border-white/10 text-white font-mono text-sm uppercase tracking-wider w-fit">
                                         SAFETY
                                     </div>
                                     <span className="text-neutral-500 text-sm">

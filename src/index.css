@@ -58,6 +58,16 @@
   border-color: var(--color-border);
 }
 
+/* Enforce pointer cursor on all interactive elements */
+button,
+a,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  cursor: pointer;
+}
+
 body {
   /* Black-White-Black effect: Radial gradient from dark gray center to black edges */
   background: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000000 80%);

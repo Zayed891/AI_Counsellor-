@@ -191,14 +191,41 @@ create policy "Users can delete from own shortlist" on public.shortlist
 create policy "Users can update own shortlist" on public.shortlist
   for update using (auth.uid() = user_id);
 
+-- CHAT SESSIONS TABLE
+create table if not exists public.chat_sessions (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users on delete cascade not null,
+  title text default 'New Chat',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- CHAT MESSAGES TABLE
 create table if not exists public.chat_messages (
   id uuid default uuid_generate_v4() primary key,
   user_id uuid references auth.users on delete cascade not null,
   role text check (role in ('user', 'assistant')) not null,
   content text not null,
+  session_id uuid references public.chat_sessions(id) on delete cascade,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+
+
+-- RLS for Chat Sessions
+alter table public.chat_sessions enable row level security;
+
+create policy "Users can view own sessions" on public.chat_sessions
+  for select using (auth.uid() = user_id);
+
+create policy "Users can insert own sessions" on public.chat_sessions
+  for insert with check (auth.uid() = user_id);
+
+create policy "Users can update own sessions" on public.chat_sessions
+  for update using (auth.uid() = user_id);
+
+create policy "Users can delete own sessions" on public.chat_sessions
+  for delete using (auth.uid() = user_id);
 
 -- RLS for Chat Messages
 alter table public.chat_messages enable row level security;
@@ -209,6 +236,9 @@ create policy "Users can view own messages" on public.chat_messages
 create policy "Users can insert own messages" on public.chat_messages
   for insert with check (auth.uid() = user_id);
 
+create policy "Users can delete own messages" on public.chat_messages
+  for delete using (auth.uid() = user_id);
+
 -- UNIVERSITY LOCKING: Add columns to shortlist if not exist
 do $$
 begin
@@ -217,6 +247,17 @@ begin
     end if;
     if not exists (select 1 from information_schema.columns where table_name = 'shortlist' and column_name = 'locked_at') then
         alter table public.shortlist add column locked_at timestamp with time zone;
+    end if;
+    if not exists (select 1 from information_schema.columns where table_name = 'shortlist' and column_name = 'locked_at') then
+        alter table public.shortlist add column locked_at timestamp with time zone;
+    end if;
+end $$;
+
+-- MIGRATION: Add session_id to chat_messages if not exists
+do $$
+begin
+    if not exists (select 1 from information_schema.columns where table_name = 'chat_messages' and column_name = 'session_id') then
+        alter table public.chat_messages add column session_id uuid references public.chat_sessions(id) on delete cascade;
     end if;
 end $$;
 

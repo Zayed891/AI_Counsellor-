@@ -87,19 +87,19 @@ export default function Dashboard() {
         <div className="min-h-screen bg-background">
             <Navbar />
 
-            <main className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-12">
+            <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12">
                 {/* Welcome Section */}
-                <div className="mb-12 border-b border-white/10 pb-8">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="mb-8 sm:mb-12 border-b border-white/10 pb-6 sm:pb-8">
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 sm:gap-6">
                         <div>
-                            <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight">
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-4 tracking-tight">
                                 Welcome back, <span className="text-neutral-400">{profile?.name?.split(' ')[0] || 'Student'}</span>
                             </h1>
-                            <p className="text-neutral-400 text-lg max-w-2xl">
+                            <p className="text-neutral-400 text-sm sm:text-lg max-w-2xl">
                                 Track your progress, manage your shortlist, and get AI guidance for your study abroad journey.
                             </p>
                         </div>
-                        <Button variant="outline" className="border-white/10 hover:bg-neutral-900 gap-2 shrink-0" asChild>
+                        <Button variant="outline" className="border-white/10 hover:bg-neutral-900 gap-2 shrink-0 w-full sm:w-auto" asChild>
                             <Link to="/onboarding">
                                 <User size={16} /> Edit Profile
                             </Link>
@@ -110,7 +110,7 @@ export default function Dashboard() {
                 {/* Stage Navigation */}
                 <Card className="mb-12 bg-[#0A0A0A] border-white/10">
                     <CardContent className="py-10">
-                        <div className="flex justify-between items-center px-4 overflow-x-auto">
+                        <div className="flex md:justify-between items-center gap-8 md:gap-0 px-4 overflow-x-auto pb-4 md:pb-0 scrollbar-hide">
                             {STAGES.map((stage, index) => {
                                 const isComplete = stage.id < (profileComplete ? 2 : 1) ||
                                     (stage.id === 2 && profileComplete) ||
@@ -167,13 +167,13 @@ export default function Dashboard() {
                                         <User size={28} className="text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-white mb-1">Complete Your Profile</h3>
-                                        <p className="text-neutral-400">
+                                        <h3 className="text-lg sm:text-xl font-bold text-white mb-1">Complete Your Profile</h3>
+                                        <p className="text-sm sm:text-base text-neutral-400">
                                             Your profile is {completeness}% complete. Complete it to unlock university discovery.
                                         </p>
                                     </div>
                                 </div>
-                                <Button variant="sharp" size="lg" asChild className="min-w-[200px]">
+                                <Button variant="sharp" size="lg" asChild className="w-full md:w-auto min-w-[200px] mt-4 md:mt-0">
                                     <Link to="/onboarding">
                                         Continue <ArrowRight size={18} />
                                     </Link>
@@ -215,7 +215,7 @@ export default function Dashboard() {
                                     <div className="w-10 h-10 mx-auto mb-3 bg-neutral-900 flex items-center justify-center border border-white/10">
                                         <stat.icon size={18} className="text-white" />
                                     </div>
-                                    <p className="text-lg font-bold text-white mb-1 truncate px-2">
+                                    <p className="text-base sm:text-lg font-bold text-white mb-1 truncate px-2">
                                         {stat.value}
                                     </p>
                                     <p className="text-[10px] font-mono text-neutral-500 uppercase tracking-widest">{stat.label}</p>
@@ -490,6 +490,6 @@ export default function Dashboard() {
                     </Card>
                 </div>
             </main>
-        </div>
+        </div >
     )
 }

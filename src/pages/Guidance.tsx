@@ -60,7 +60,7 @@ export default function Guidance() {
         return (
             <div className="min-h-screen">
                 <Navbar />
-                <main className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-20">
+                <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
                     <Card className="bg-[#0A0A0A] border-white/10 py-20">
                         <CardContent className="text-center max-w-lg mx-auto">
                             <div className="w-20 h-20 mx-auto mb-8 bg-neutral-900 border border-white/10 flex items-center justify-center">
@@ -87,14 +87,14 @@ export default function Guidance() {
         <div className="min-h-screen">
             <Navbar />
 
-            <main className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-20">
+            <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
                 {/* Header */}
-                <div className="mb-10 border-b border-white/10 pb-8">
+                <div className="mb-8 sm:mb-10 border-b border-white/10 pb-6 sm:pb-8">
                     <Badge variant="secondary" className="mb-4 border-white/20">APPLICATION GUIDANCE</Badge>
-                    <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 text-white tracking-tight">
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-4 text-white tracking-tight">
                         Your Application Strategy
                     </h1>
-                    <p className="text-neutral-400 text-lg">
+                    <p className="text-neutral-400 text-sm sm:text-lg">
                         Personalized guidance for your {lockedUniversities.length} locked {lockedUniversities.length === 1 ? 'university' : 'universities'}.
                     </p>
                 </div>

@@ -222,11 +222,11 @@ export default function Discover() {
         <div className="min-h-screen">
             <Navbar />
 
-            <main className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 pt-24 pb-20">
+            <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
                 {/* Header */}
-                <div className="mb-10 border-b border-white/10 pb-8">
-                    <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 text-white tracking-tight">Discover Universities</h1>
-                    <p className="text-neutral-400 text-lg max-w-2xl">
+                <div className="mb-8 sm:mb-10 border-b border-white/10 pb-6 sm:pb-8">
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-4 text-white tracking-tight">Discover Universities</h1>
+                    <p className="text-neutral-400 text-sm sm:text-lg max-w-2xl">
                         Find and shortlist universities that match your profile using our AI-powered database.
                     </p>
                 </div>
@@ -248,8 +248,8 @@ export default function Discover() {
                                     className="pl-12 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
                                 />
                             </div>
-                            <div className="flex gap-3">
-                                <div className="relative">
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="relative w-full sm:w-auto">
                                     <DollarSign
                                         size={18}
                                         className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
@@ -259,10 +259,10 @@ export default function Discover() {
                                         placeholder="Budget Limit"
                                         value={budgetFilter}
                                         onChange={(e) => setBudgetFilter(e.target.value)}
-                                        className="pl-11 w-48 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
+                                        className="pl-11 w-full sm:w-48 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
                                     />
                                 </div>
-                                <Button variant="sharp" onClick={handleSearch} className="h-12 px-8">
+                                <Button variant="sharp" onClick={handleSearch} className="h-12 px-8 w-full sm:w-auto">
                                     <Filter size={18} className="mr-2" /> FILTER
                                 </Button>
                             </div>
@@ -322,7 +322,7 @@ export default function Discover() {
                                     key={university.id}
                                     className="bg-[#0A0A0A] border-white/10 hover:border-white/30 transition-all duration-300 group"
                                 >
-                                    <CardContent className="p-6">
+                                    <CardContent className="p-4 sm:p-6">
                                         <div className="flex items-start justify-between mb-6">
                                             <div className="w-12 h-12 bg-neutral-900 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors duration-300">
                                                 <GraduationCap size={24} />

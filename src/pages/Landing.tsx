@@ -16,50 +16,50 @@ export default function Landing() {
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
 
-                <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-20 w-full grid lg:grid-cols-2 gap-16 items-center relative z-10">
+                <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-10 sm:py-20 w-full grid lg:grid-cols-2 gap-10 lg:gap-16 items-center relative z-10">
                     {/* Left Content */}
-                    <div className="space-y-10">
+                    <div className="space-y-8 lg:space-y-10">
                         <Badge variant="secondary" className="animate-pulse-ring border-white/20">
                             <Sparkles size={14} className="mr-2 text-accent" /> AI-POWERED GUIDANCE
                         </Badge>
 
-                        <h1 className="text-6xl lg:text-8xl font-extrabold leading-tight tracking-tighter">
+                        <h1 className="text-4xl sm:text-6xl lg:text-8xl font-extrabold leading-tight tracking-tighter">
                             Land your dream
                             <br />
                             <span className="text-muted-foreground/60">university spot</span>
                         </h1>
 
-                        <p className="text-xl text-muted-foreground/80 max-w-lg leading-relaxed">
+                        <p className="text-lg sm:text-xl text-muted-foreground/80 max-w-lg leading-relaxed">
                             Global universities that match your profile. Get real-time
                             recommendations and be the first one to apply with AI guidance.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-5">
-                            <Button variant="sharp" size="xl" asChild className="h-16 px-10 text-lg">
+                        <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+                            <Button variant="sharp" size="xl" asChild className="h-14 sm:h-16 px-8 sm:px-10 text-lg w-full sm:w-auto">
                                 <Link to="/signup">
                                     Get Started <ArrowRight size={20} />
                                 </Link>
                             </Button>
-                            <Button variant="sharp-outline" size="xl" asChild className="h-16 px-10 text-lg">
+                            <Button variant="sharp-outline" size="xl" asChild className="h-14 sm:h-16 px-8 sm:px-10 text-lg w-full sm:w-auto">
                                 <Link to="/login">I have an account</Link>
                             </Button>
                         </div>
 
-                        <div className="flex gap-16 pt-10 border-t border-white/10">
+                        <div className="flex flex-wrap gap-8 sm:gap-16 pt-10 border-t border-white/10">
                             <div>
-                                <p className="text-4xl font-extrabold">500+</p>
+                                <p className="text-3xl sm:text-4xl font-extrabold">500+</p>
                                 <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mt-1">
                                     Universities
                                 </p>
                             </div>
                             <div>
-                                <p className="text-4xl font-extrabold">50+</p>
+                                <p className="text-3xl sm:text-4xl font-extrabold">50+</p>
                                 <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mt-1">
                                     Countries
                                 </p>
                             </div>
                             <div>
-                                <p className="text-4xl font-extrabold">AI</p>
+                                <p className="text-3xl sm:text-4xl font-extrabold">AI</p>
                                 <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mt-1">
                                     Powered
                                 </p>
@@ -110,13 +110,13 @@ export default function Landing() {
             </section>
 
             {/* Features Section */}
-            <section className="py-32 bg-black border-t border-white/5">
+            <section className="py-16 md:py-32 bg-black border-t border-white/5">
                 <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
                     <div className="mb-20">
                         <p className="text-sm font-mono uppercase tracking-widest text-accent mb-4">
                             How it Works
                         </p>
-                        <h2 className="text-4xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight">
+                        <h2 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight">
                             Your Journey to Success
                         </h2>
                         <p className="text-xl text-neutral-400 max-w-2xl leading-relaxed">
@@ -178,13 +178,13 @@ export default function Landing() {
                 <div className="absolute inset-0 bg-accent/5 blur-[150px] opacity-30" />
 
                 <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                    <h2 className="text-5xl lg:text-7xl font-extrabold mb-8 tracking-tighter">
+                    <h2 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold mb-8 tracking-tighter">
                         Ready to Start?
                     </h2>
                     <p className="text-xl text-neutral-400 mb-12 max-w-xl mx-auto leading-relaxed">
                         Join thousands of students who found their dream university with AI Counsellor
                     </p>
-                    <Button variant="sharp" size="xl" asChild className="h-16 px-12 text-lg">
+                    <Button variant="sharp" size="xl" asChild className="h-14 sm:h-16 px-8 sm:px-12 text-lg w-full sm:w-auto">
                         <Link to="/signup">
                             Create Free Account <ArrowRight size={20} />
                         </Link>
