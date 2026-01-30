@@ -10,7 +10,8 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { useVoice } from '@/hooks/useVoice'
 import { speakWithElevenLabs, ELEVENLABS_DEFAULT_VOICE } from '@/lib/elevenlabs'
-import { DEFAULT_MODEL, sendChatMessage } from '@/lib/openrouter' // Import DEFAULT_MODEL
+import { DEFAULT_MODEL, sendChatMessage } from '@/lib/ai_service' // Import DEFAULT_MODEL
+import { extractDetailsWithGemini } from '@/lib/gemini'
 
 
 import {
@@ -195,59 +196,28 @@ export default function Onboarding() {
 
 
         try {
-            const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY
-            if (!API_KEY) {
-                console.error("Missing VITE_OPENROUTER_API_KEY")
-                throw new Error("No API Key configured")
-            }
+            console.log("[Extraction] Utilizing Gemini API via SDK")
+            const prompt = `
+                        You are a strict data extraction assistant.
+                        TASK: Extract specific data fields from the user's spoken input into a JSON object.
+                        
+                        CONTEXT: Step ${currentStep} (${STEPS[currentStep - 1].title}).
+                        INPUT: "${transcript}"
+                        TARGET FIELDS: ${targetFields.join(', ')}
+                        
+                        RULES:
+                        1. Extract ONLY the "Target Fields" listed above. Ignore all other information.
+                        2. If a field is NOT explicitly present in the input, OMIT it from the JSON.
+                        3. Do NOT return empty strings ("") or nulls.
+                        4. Do NOT hallucinate.
+                        
+                        Return ONLY valid JSON. No markdown.`
 
-            console.log("Processing transcript with model:", DEFAULT_MODEL)
-
-            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${API_KEY}`,
-                    'HTTP-Referer': window.location.origin,
-                    'X-Title': 'AI Study Counselor',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model: 'openai/gpt-3.5-turbo',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: `You are a strict data extraction assistant.
-                            TASK: Extract specific data fields from the user's spoken input into a JSON object.
-                            
-                            CONTEXT: Step ${currentStep} (${STEPS[currentStep - 1].title}).
-                            INPUT: "${transcript}"
-                            TARGET FIELDS: ${targetFields.join(', ')}
-                            
-                            RULES:
-                            1. Extract ONLY the "Target Fields" listed above. Ignore all other information.
-                            2. If a field is NOT explicitly present in the input, OMIT it from the JSON.
-                            3. Do NOT return empty strings ("") or nulls.
-                            4. Do NOT hallucinate. (e.g., do not put a phone number in the name field).
-                            
-                            Return ONLY valid JSON. No markdown.`
-                        }
-                    ],
-                    temperature: 0.1
-                })
-            })
-
-            if (!response.ok) {
-                const errText = await response.text()
-                console.error("OpenRouter API Error:", response.status, errText)
-                throw new Error(`API Error: ${response.status}`)
-            }
-
-            const json = await response.json()
-            const content = json.choices?.[0]?.message?.content || ""
+            const content = await extractDetailsWithGemini(prompt, transcript)
 
             console.log("AI Raw Response:", content)
 
-            // Robust JSON extraction: Find { ... }
+            // Robust JSON extraction
             const jsonMatch = content.match(/\{[\s\S]*\}/)
             if (!jsonMatch) {
                 throw new Error("No JSON found in response")
@@ -258,34 +228,38 @@ export default function Onboarding() {
 
             console.log("Extracted Data:", extractedData)
 
-            // Merge data
-            setData(prev => ({ ...prev, ...extractedData }))
+            // Update fields
+            Object.keys(extractedData).forEach(key => {
+                if (targetFields.includes(key)) {
+                    updateField(key as keyof OnboardingData, extractedData[key])
+                }
+            })
 
-            // Give feedback
+            // Auto-advance logic
             speak("Got it!")
 
-            // Wait then Move next
-            // Wait then Move next
-            setTimeout(() => {
-                // If Step 1, handle sub-steps
-                if (currentStep === 1) {
-                    if (subStep < 2) {
-                        setSubStep(prev => prev + 1)
+            if (isInterviewMode) {
+                setTimeout(() => {
+                    // Smart navigation: handle sub-steps vs main steps
+                    if (currentStep === 1) {
+                        if (subStep < 2) {
+                            setSubStep(prev => prev + 1)
+                        } else {
+                            handleNext()
+                        }
                     } else {
                         handleNext()
                     }
-                } else {
-                    handleNext()
-                }
-                resetTranscript()
-            }, 1000)
+                }, 1000)
+            }
 
-        } catch (e: any) {
-            console.error("Extraction failed", e)
-            setLastError(e.message || "Unknown error")
-            speak("I'm sorry, I had trouble connecting. Please check the error on screen.")
+        } catch (error: any) {
+            console.error("AI Extraction Error:", error)
+            setLastError(`Voice Error: ${error.message || 'Check API Key'}`)
+            speak("Sorry, I couldn't understand that completely. Please try again.")
         } finally {
             setAiProcessing(false)
+            resetTranscript()
         }
     }
 
@@ -798,7 +772,7 @@ export default function Onboarding() {
                                         ].map((doc) => (
                                             <div
                                                 key={doc.key}
-                                                className={`p-5 rounded-none border cursor-pointer transition-all duration-200 flex items-center gap-4 ${data[doc.key as keyof OnboardingData]
+                                                className={`p-5 rounded-none border cursor-pointer transition-all duration-200 flex items-end gap-4 ${data[doc.key as keyof OnboardingData]
                                                     ? 'bg-neutral-900 border-white/30'
                                                     : 'bg-[#0A0A0A] border-white/10 hover:border-white/20'
                                                     }`}

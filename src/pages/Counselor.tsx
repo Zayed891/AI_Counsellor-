@@ -30,8 +30,8 @@ import {
     StopCircle,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { sendChatMessage } from '@/lib/openrouter'
-import type { ChatMessage, AIAction } from '@/lib/openrouter'
+import { sendChatMessage } from '@/lib/ai_service'
+import type { ChatMessage, AIAction } from '@/lib/ai_service'
 import { useVoice } from '@/hooks/useVoice'
 import { speakWithElevenLabs, ELEVENLABS_DEFAULT_VOICE } from '@/lib/elevenlabs'
 

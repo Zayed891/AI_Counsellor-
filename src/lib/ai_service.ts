@@ -1,10 +1,12 @@
+
 import type { Profile } from './supabase'
+import { generateGeminiContent } from './gemini'
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'http://localhost:5173'
 const SITE_NAME = 'AI Study Counselor'
 
-// Default model - Claude follows instructions better
-export const DEFAULT_MODEL = 'openai/gpt-3.5-turbo' // Standard, reliable model
+// Default model
+export const DEFAULT_MODEL = 'google/gemini-flash-latest'
 
 export interface ChatMessage {
     role: 'user' | 'assistant'
@@ -137,7 +139,7 @@ function parseActions(text: string): AIAction[] {
     }
 
     // Fallback: Try to detect intent from natural language (only if no explicit tags)
-    console.log('[OpenRouter] No action tags found, trying intent detection...')
+    console.log('[AI Service] No action tags found, trying intent detection...')
     const intent = detectIntentFromText(text)
     return intent ? [intent] : []
 }
@@ -157,8 +159,8 @@ function parseActionTagInternal(type: string, paramsStr: string): AIAction | und
         }
     }
 
-    console.log('[OpenRouter] Parsed action type:', actionType)
-    console.log('[OpenRouter] Parsed params:', params)
+    console.log('[AI Service] Parsed action type:', actionType)
+    console.log('[AI Service] Parsed params:', params)
 
     switch (actionType) {
         case 'ADD_UNIVERSITY':
@@ -208,7 +210,7 @@ function detectIntentFromText(text: string): AIAction | undefined {
         for (const uni of universities) {
             if (text.includes(uni) || lowerText.includes(uni.toLowerCase())) {
                 const title = `Submit application to ${uni}`
-                console.log('[OpenRouter] Intent detected: add_app_task, title:', title)
+                console.log('[AI Service] Intent detected: add_app_task, title:', title)
                 return { type: 'add_app_task', params: { title } }
             }
         }
@@ -217,7 +219,7 @@ function detectIntentFromText(text: string): AIAction | undefined {
         const uniPatternMatch = text.match(/(?:the\s+)?(University of [A-Z][a-z]+(?:\s[A-Z][a-z]+)?|[A-Z][a-z]+(?:\s[A-Z][a-z]+)?\s+University)/i)
         if (uniPatternMatch) {
             const title = `Submit application to ${uniPatternMatch[1].trim()}`
-            console.log('[OpenRouter] Intent detected: add_app_task, title:', title)
+            console.log('[AI Service] Intent detected: add_app_task, title:', title)
             return { type: 'add_app_task', params: { title } }
         }
 
@@ -226,7 +228,7 @@ function detectIntentFromText(text: string): AIAction | undefined {
             let action = 'Submit application'
             if (/pay.*fee/i.test(lowerText)) action = 'Pay application fee'
             if (/track/i.test(lowerText)) action = 'Track application status'
-            console.log('[OpenRouter] Intent detected: add_app_task, title:', action)
+            console.log('[AI Service] Intent detected: add_app_task, title:', action)
             return { type: 'add_app_task', params: { title: action } }
         }
     }
@@ -238,24 +240,24 @@ function detectIntentFromText(text: string): AIAction | undefined {
         const testMatch = text.match(/(IELTS|TOEFL|GRE|GMAT|SAT)/i)
         if (testMatch) {
             const title = `Prepare for ${testMatch[1].toUpperCase()}`
-            console.log('[OpenRouter] Intent detected: add_todo, title:', title, 'category: exams')
+            console.log('[AI Service] Intent detected: add_todo, title:', title, 'category: exams')
             return { type: 'add_todo', params: { title, category: 'exams' } }
         }
     }
 
     // Look for document-related tasks
     if (/(?:write|draft|prepare).*(?:SOP|statement of purpose)/i.test(text)) {
-        console.log('[OpenRouter] Intent detected: add_todo, title: Write Statement of Purpose, category: documents')
+        console.log('[AI Service] Intent detected: add_todo, title: Write Statement of Purpose, category: documents')
         return { type: 'add_todo', params: { title: 'Write Statement of Purpose', category: 'documents' } }
     }
 
     if (/(?:get|request|obtain).*(?:LOR|letter of recommendation|recommendation letter)/i.test(text)) {
-        console.log('[OpenRouter] Intent detected: add_todo, title: Get Letters of Recommendation, category: documents')
+        console.log('[AI Service] Intent detected: add_todo, title: Get Letters of Recommendation, category: documents')
         return { type: 'add_todo', params: { title: 'Get Letters of Recommendation', category: 'documents' } }
     }
 
     if (/(?:get|request|obtain).*transcript/i.test(text)) {
-        console.log('[OpenRouter] Intent detected: add_todo, title: Get Academic Transcripts, category: documents')
+        console.log('[AI Service] Intent detected: add_todo, title: Get Academic Transcripts, category: documents')
         return { type: 'add_todo', params: { title: 'Get Academic Transcripts', category: 'documents' } }
     }
 
@@ -265,7 +267,7 @@ function detectIntentFromText(text: string): AIAction | undefined {
         const quotedMatch = text.match(/["""']([^"""']+)["""']/i)
         if (quotedMatch) {
             const title = quotedMatch[1].trim().substring(0, 80)
-            console.log('[OpenRouter] Intent detected: add_todo, title:', title, 'category: general')
+            console.log('[AI Service] Intent detected: add_todo, title:', title, 'category: general')
             return { type: 'add_todo', params: { title, category: 'general' } }
         }
     }
@@ -284,66 +286,34 @@ export async function sendChatMessage(
     profile: Profile | null,
     shortlist: any[]
 ): Promise<AIResponse> {
-    // Read key at runtime
-    const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || ''
-
-    console.log('[OpenRouter] Runtime Key Check:', API_KEY ? 'Has Key' : 'No Key')
-
-    if (!API_KEY) {
-        return {
-            message: `I'm your AI Counselor! To enable full functionality, please configure your OpenRouter API key.
-
-To get personalized AI recommendations and ACTIONS, add your OpenRouter API key to the environment variables.`
-        }
-    }
-
     try {
         const systemPrompt = buildSystemPrompt(profile, shortlist)
 
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${API_KEY}`,
-                'HTTP-Referer': SITE_URL,
-                'X-Title': SITE_NAME,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: DEFAULT_MODEL,
-                messages: [
-                    { role: 'system', content: systemPrompt },
-                    ...messages.map(msg => ({
-                        role: msg.role,
-                        content: msg.content
-                    }))
-                ],
-                temperature: 0.7
-            })
-        })
+        // EXCLUSIVE GEMINI PATH
+        console.log('[AI Service] Utilizing Google Gemini API via SDK')
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}))
-            console.error('OpenRouter API Error:', errorData)
-            throw new Error(`OpenRouter API Error: ${response.status} ${JSON.stringify(errorData)}`)
-        }
+        // Determine user message (last one)
+        const lastUserMsg = messages[messages.length - 1].content
 
-        const data = await response.json()
-        const fullText = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response."
+        try {
+            const responseText = await generateGeminiContent(systemPrompt, lastUserMsg)
 
-        // Parse action
-        const actions = parseActions(fullText)
-        const cleanedMessage = cleanMessage(fullText)
+            const actions = parseActions(responseText)
+            const cleanedMessage = cleanMessage(responseText)
 
-        return {
-            message: cleanedMessage,
-            actions
+            return { message: cleanedMessage, actions }
+        } catch (error: any) {
+            console.error('Gemini API Error:', error)
+            // Return the actual error message to the UI so the user knows if it's 429/404/etc
+            return {
+                message: `⚠️ AI Service Error: ${error.message}. Please check your API Key limits.`
+            }
         }
 
     } catch (error) {
         console.error('Error sending chat message:', error)
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error'
         return {
-            message: `I'm sorry, I encountered an error: ${errorMessage}. Please check the console for more details.`
+            message: `System Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         }
     }
 }
