@@ -1,7 +1,9 @@
-// University API service using HIPOLABS Universities API
-// https://github.com/Hipo/university-domains-list-api
+// University API service using HIPOLABS University Domains List (Raw JSON via HTTPS)
+// https://github.com/Hipo/university-domains-list
 
-const API_BASE = 'http://universities.hipolabs.com'
+// We fetch the full list from GitHub (HTTPS) to avoid Mixed Content errors on Vercel
+// and to enable fast client-side filtering.
+const DATA_URL = 'https://raw.githubusercontent.com/Hipo/university-domains-list/master/world_universities_and_domains.json'
 
 export interface UniversityAPI {
     name: string
@@ -78,42 +80,58 @@ const transformUniversity = (uni: UniversityAPI): University => {
     }
 }
 
+// Cache for the full list
+let cachedUniversities: UniversityAPI[] | null = null
+
+async function fetchAllUniversities(): Promise<UniversityAPI[]> {
+    if (cachedUniversities) return cachedUniversities
+
+    try {
+        const response = await fetch(DATA_URL)
+        if (!response.ok) throw new Error('Failed to fetch university data')
+        const data = await response.json()
+        cachedUniversities = data
+        return data
+    } catch (error) {
+        console.error('Error loading university data:', error)
+        return []
+    }
+}
+
 export async function searchUniversities(
     country?: string,
     name?: string
 ): Promise<University[]> {
     try {
-        let url = `${API_BASE}/search?`
-        const params: string[] = []
+        const allUniversities = await fetchAllUniversities()
+
+        let filtered = allUniversities
 
         if (country) {
-            params.push(`country=${encodeURIComponent(country)}`)
+            // Case-insensitive exact match for country
+            filtered = filtered.filter(u => u.country.toLowerCase() === country.toLowerCase())
         }
+
         if (name) {
-            params.push(`name=${encodeURIComponent(name)}`)
+            const lowerName = name.toLowerCase()
+            filtered = filtered.filter(u => u.name.toLowerCase().includes(lowerName))
         }
 
-        if (params.length === 0) {
-            // Default search - get US universities
-            params.push('country=United States')
+        // If no filters, limit default to US for relevance (or just top ranked globally)
+        if (!country && !name) {
+            filtered = filtered.filter(u => u.country === 'United States')
         }
 
-        url += params.join('&')
-
-        const response = await fetch(url)
-        if (!response.ok) {
-            throw new Error('Failed to fetch universities')
-        }
-
-        const data: UniversityAPI[] = await response.json()
-
-        // Transform and limit results
-        return data
-            .slice(0, 100)
+        // Transform and sort
+        const results = filtered
             .map(transformUniversity)
             .sort((a, b) => (a.ranking || 999) - (b.ranking || 999))
+
+        // Slice for pagination/performance
+        return results.slice(0, 50)
+
     } catch (error) {
-        console.error('Error fetching universities:', error)
+        console.error('Error searching universities:', error)
         return []
     }
 }
@@ -122,16 +140,21 @@ export async function getUniversitiesByCountries(
     countries: string[]
 ): Promise<University[]> {
     try {
-        const promises = countries.map(country => searchUniversities(country))
-        const results = await Promise.all(promises)
+        const allUniversities = await fetchAllUniversities()
 
-        // Flatten and sort by ranking
-        return results
-            .flat()
+        const lowerCountries = countries.map(c => c.toLowerCase())
+
+        const filtered = allUniversities.filter(u =>
+            lowerCountries.includes(u.country.toLowerCase())
+        )
+
+        return filtered
+            .map(transformUniversity)
             .sort((a, b) => (a.ranking || 999) - (b.ranking || 999))
-            .slice(0, 100)
+            .slice(0, 50)
+
     } catch (error) {
-        console.error('Error fetching universities:', error)
+        console.error('Error fetching universities by country:', error)
         return []
     }
 }
