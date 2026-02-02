@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 import { useAuth } from './AuthContext'
 import { supabase, type University, type Shortlist, type Task, type Profile } from '@/lib/supabase'
 import { generateProfileBasedTasks } from '@/lib/taskTemplates'
@@ -26,7 +27,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | null>(null)
 
 export function UserProvider({ children }: { children: ReactNode }) {
-    const { user, profile } = useAuth()
+    const { user, profile, session } = useAuth()
     const [shortlist, setShortlist] = useState<Shortlist[]>([])
     const [tasks, setTasks] = useState<Task[]>([])
     const [currentStage, setCurrentStage] = useState(1)
@@ -56,12 +57,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (!user) return
 
         try {
-            const { data, error } = await supabase
-                .from('shortlist')
-                .select('*, university:universities(*)')
-                .eq('user_id', user.id)
-
-            if (error) throw error
+            const response = await fetch(`${API_URL}/api/shortlist`, {
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
+            if (!response.ok) throw new Error('Failed to fetch shortlist')
+            const data = await response.json()
             setShortlist(data || [])
         } catch (error) {
             console.error('Error fetching shortlist:', error)
@@ -73,12 +76,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const fetchTasks = async () => {
         if (!user) return
         try {
-            const { data, error } = await supabase
-                .from('tasks')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
-            if (error) throw error
+            const response = await fetch(`${API_URL}/api/tasks`, {
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
+            if (!response.ok) throw new Error('Failed to fetch tasks')
+            const data = await response.json()
             setTasks(data || [])
             return data || []
         } catch (error) {
@@ -96,16 +101,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
             const currentTasks = await fetchTasks()
             const newTasks = generateProfileBasedTasks(profile, currentTasks || [])
 
-            // Add each new task
+            // Add each new task via API
             for (const task of newTasks) {
-                await supabase
-                    .from('tasks')
-                    .insert({
-                        user_id: user.id,
-                        title: task.title,
-                        category: task.category,
-                        description: task.description
-                    })
+                await addTask(task.title, task.category, task.description)
             }
 
             // Refresh tasks if any were added
@@ -136,32 +134,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (!user) return
 
         try {
-            // Ensure university exists in DB first
-            const { error: uniError } = await supabase
-                .from('universities')
-                .upsert({
-                    id: university.id,
-                    name: university.name,
-                    country: university.country,
-                    city: university.city,
-                    ranking: university.ranking,
-                    tuition_min: university.tuition_min,
-                    tuition_max: university.tuition_max,
-                    website: university.website
-                })
+            const response = await fetch(`${API_URL}/api/shortlist`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ university, category })
+            })
 
-            if (uniError) throw uniError
+            if (!response.ok) throw new Error('Failed to add to shortlist')
 
-            // Then add to shortlist
-            const { error } = await supabase
-                .from('shortlist')
-                .insert({
-                    user_id: user.id,
-                    university_id: university.id,
-                    category
-                })
-
-            if (error) throw error
             await fetchShortlist()
         } catch (error) {
             console.error('Error adding to shortlist:', error)
@@ -172,13 +156,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (!user) return
 
         try {
-            const { error } = await supabase
-                .from('shortlist')
-                .delete()
-                .eq('user_id', user.id)
-                .eq('university_id', universityId)
+            const response = await fetch(`${API_URL}/api/shortlist/${universityId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
 
-            if (error) throw error
+            if (!response.ok) throw new Error('Failed to remove from shortlist')
+
             setShortlist(prev => prev.filter(s => s.university_id !== universityId))
         } catch (error) {
             console.error('Error removing from shortlist:', error)
@@ -189,13 +176,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (!user) return
 
         try {
-            const { error } = await supabase
-                .from('shortlist')
-                .update({ category })
-                .eq('user_id', user.id)
-                .eq('university_id', universityId)
+            const response = await fetch(`${API_URL}/api/shortlist/${universityId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ category })
+            })
 
-            if (error) throw error
+            if (!response.ok) throw new Error('Failed to update category')
+
             setShortlist(prev =>
                 prev.map(s =>
                     s.university_id === universityId ? { ...s, category } : s
@@ -214,12 +206,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const lockUniversity = async (universityId: string) => {
         if (!user) return
         try {
-            const { error } = await supabase
-                .from('shortlist')
-                .update({ is_locked: true, locked_at: new Date().toISOString() })
-                .eq('user_id', user.id)
-                .eq('university_id', universityId)
-            if (error) throw error
+            const response = await fetch(`${API_URL}/api/shortlist/${universityId}/lock`, {
+                method: 'PATCH',
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
+
+            if (!response.ok) throw new Error('Failed to lock university')
+
             setShortlist(prev =>
                 prev.map(s =>
                     s.university_id === universityId
@@ -235,12 +231,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const unlockUniversity = async (universityId: string) => {
         if (!user) return
         try {
-            const { error } = await supabase
-                .from('shortlist')
-                .update({ is_locked: false, locked_at: null })
-                .eq('user_id', user.id)
-                .eq('university_id', universityId)
-            if (error) throw error
+            const response = await fetch(`${API_URL}/api/shortlist/${universityId}/unlock`, {
+                method: 'PATCH',
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
+
+            if (!response.ok) throw new Error('Failed to unlock university')
+
             setShortlist(prev =>
                 prev.map(s =>
                     s.university_id === universityId
@@ -265,16 +265,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
             return
         }
         try {
-            console.log('[UserContext] Inserting task into Supabase...')
-            const { data, error } = await supabase
-                .from('tasks')
-                .insert({ user_id: user.id, title, category, description })
-                .select()
+            console.log('[UserContext] Sending task to API...')
+            const response = await fetch(`${API_URL}/api/tasks`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ title, category, description })
+            })
 
-            if (error) {
-                console.error('[UserContext] Supabase insert error:', error)
-                throw error
-            }
+            if (!response.ok) throw new Error('Failed to add task')
+
+            const data = await response.json()
             console.log('[UserContext] Task inserted successfully:', data)
             await fetchTasks()
             console.log('[UserContext] Tasks refreshed')
@@ -286,21 +290,22 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const toggleTask = async (taskId: string) => {
         if (!user) return
         try {
-            const task = tasks.find(t => t.id === taskId)
-            if (!task) return
-            const isCompleted = !task.is_completed
-            const { error } = await supabase
-                .from('tasks')
-                .update({
-                    is_completed: isCompleted,
-                    completed_at: isCompleted ? new Date().toISOString() : null
-                })
-                .eq('id', taskId)
-            if (error) throw error
+            const response = await fetch(`${API_URL}/api/tasks/${taskId}/toggle`, {
+                method: 'PATCH',
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
+
+            if (!response.ok) throw new Error('Failed to toggle task')
+
+            const { is_completed } = await response.json()
+
             setTasks(prev =>
                 prev.map(t =>
                     t.id === taskId
-                        ? { ...t, is_completed: isCompleted, completed_at: isCompleted ? new Date().toISOString() : undefined }
+                        ? { ...t, is_completed, completed_at: is_completed ? new Date().toISOString() : undefined }
                         : t
                 )
             )
@@ -312,11 +317,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const deleteTask = async (taskId: string) => {
         if (!user) return
         try {
-            const { error } = await supabase
-                .from('tasks')
-                .delete()
-                .eq('id', taskId)
-            if (error) throw error
+            const response = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-User-ID': user.id,
+                    'Authorization': `Bearer ${session?.access_token}`
+                }
+            })
+
+            if (!response.ok) throw new Error('Failed to delete task')
+
             setTasks(prev => prev.filter(t => t.id !== taskId))
         } catch (error) {
             console.error('Error deleting task:', error)

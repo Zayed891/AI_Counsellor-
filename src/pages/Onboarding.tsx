@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { useVoice } from '@/hooks/useVoice'
 import { speakWithElevenLabs, ELEVENLABS_DEFAULT_VOICE } from '@/lib/elevenlabs'
 import { DEFAULT_MODEL, sendChatMessage } from '@/lib/ai_service' // Import DEFAULT_MODEL
-import { extractDetailsWithGemini } from '@/lib/gemini'
+
 
 
 import {
@@ -101,7 +101,7 @@ export default function Onboarding() {
         if (elevenLabsKey) {
             try {
                 // User requested ONLY ElevenLabs
-                await speakWithElevenLabs(text, { apiKey: elevenLabsKey, voiceId: ELEVENLABS_DEFAULT_VOICE })
+                await speakWithElevenLabs(text, { voiceId: ELEVENLABS_DEFAULT_VOICE })
             } catch (e: any) {
                 console.error("ElevenLabs TTS failed", e)
                 setLastError(`Voice Error: ${e.message || 'Check API Key'}`)
@@ -213,7 +213,18 @@ export default function Onboarding() {
                         
                         Return ONLY valid JSON. No markdown.`
 
-            const content = await extractDetailsWithGemini(prompt, transcript)
+            // Use backend API for extraction
+            // Use backend API for extraction
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/ai/extract`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ systemPrompt: prompt, userInput: transcript })
+            })
+
+            if (!response.ok) throw new Error('Failed to extract data')
+            const responseData = await response.json()
+            const content = responseData.text
+
 
             console.log("AI Raw Response:", content)
 
