@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
@@ -12,8 +12,15 @@ export default function Login() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
-    const { signIn, signInWithGoogle } = useAuth()
+    const { signIn, signInWithGoogle, user, loading: authLoading } = useAuth()
     const navigate = useNavigate()
+
+    // Redirect logged-in users to dashboard
+    useEffect(() => {
+        if (!authLoading && user) {
+            navigate('/dashboard')
+        }
+    }, [user, authLoading, navigate])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
