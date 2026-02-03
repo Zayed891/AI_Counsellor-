@@ -67,7 +67,7 @@ const transformUniversity = (uni: UniversityAPI): University => {
     const tuition = TUITION_RANGES[uni.country] || { min: 10000, max: 30000 }
 
     return {
-        id: btoa(`${uni.name}-${uni.country}`).replace(/=/g, ''),
+        id: btoa(encodeURIComponent(`${uni.name}-${uni.country}`)).replace(/=/g, ''),
         name: uni.name,
         country: uni.country,
         state: uni['state-province'] || undefined,

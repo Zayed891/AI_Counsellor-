@@ -71,7 +71,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                                         {link.label}
                                     </Link>
                                 ))}
-                                <Button variant="sharp-outline" size="sm" onClick={handleSignOut}>
+                                <Button variant="outline" size="sm" onClick={handleSignOut}>
                                     Logout
                                 </Button>
                             </>
@@ -83,7 +83,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                                 >
                                     Login
                                 </Link>
-                                <Button variant="sharp" size="sm" asChild>
+                                <Button variant="default" size="sm" asChild>
                                     <Link to="/signup">Get Started →</Link>
                                 </Button>
                             </>
@@ -119,7 +119,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                                         {link.label}
                                     </Link>
                                 ))}
-                                <Button variant="sharp-outline" onClick={handleSignOut}>
+                                <Button variant="outline" onClick={handleSignOut}>
                                     Logout
                                 </Button>
                             </>
@@ -132,7 +132,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                                 >
                                     Login
                                 </Link>
-                                <Button variant="sharp" asChild>
+                                <Button variant="default" asChild>
                                     <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
                                         Get Started →
                                     </Link>

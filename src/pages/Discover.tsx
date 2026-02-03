@@ -1,21 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useUser } from '@/context/UserContext'
-import Navbar from '@/components/Navbar'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import {
     Search,
     Filter,
     GraduationCap,
     MapPin,
     DollarSign,
-    Trophy,
     Plus,
     Check,
-    ExternalLink,
     Loader2,
 } from 'lucide-react'
 import { searchUniversities, getUniversitiesByCountries } from '@/lib/universityApi'
@@ -46,20 +40,17 @@ export default function Discover() {
 
     useEffect(() => {
         loadUniversities()
-    }, [])
+    }, [profile?.target_countries])
 
     const loadUniversities = async () => {
         setLoading(true)
         try {
             let results: University[]
-
-            // Use user's target countries if available
             if (profile?.target_countries && profile.target_countries.length > 0) {
                 results = await getUniversitiesByCountries(profile.target_countries)
             } else {
                 results = await searchUniversities('United States')
             }
-
             setUniversities(results)
         } catch (error) {
             console.error('Error loading universities:', error)
@@ -72,7 +63,6 @@ export default function Discover() {
         setLoading(true)
         try {
             let results: University[]
-
             if (searchQuery) {
                 results = await searchUniversities(selectedCountry || undefined, searchQuery)
             } else if (selectedCountry) {
@@ -80,7 +70,6 @@ export default function Discover() {
             } else {
                 results = await searchUniversities('United States')
             }
-
             setUniversities(results)
         } catch (error) {
             console.error('Error searching universities:', error)
@@ -94,7 +83,6 @@ export default function Discover() {
         setLoading(true)
         try {
             if (country === selectedCountry) {
-                // Deselect - load default
                 const results = await searchUniversities('United States')
                 setUniversities(results)
             } else {
@@ -128,17 +116,12 @@ export default function Discover() {
         return shortlist.some(s => s.university_id === universityId)
     }
 
-    // AI-driven categorization based on profile
     const getAISuggestion = (university: University): { category: 'reach' | 'target' | 'safety', reason: string } => {
         const userGPA = profile?.gpa || 0
         const userBudget = profile?.budget_max || 100000
-        const hasExams = !!(profile?.ielts || profile?.toefl)
-
-        // Higher ranking = more competitive (lower number = higher rank)
         const ranking = university.ranking || 500
         const tuition = university.tuitionMin || university.tuitionMax || 30000
 
-        // Dream: Top 50 ranking OR significantly above budget OR GPA < 3.5
         if (ranking <= 50 || tuition > userBudget * 1.2 || (userGPA < 3.5 && ranking <= 100)) {
             return {
                 category: 'reach',
@@ -146,67 +129,51 @@ export default function Discover() {
             }
         }
 
-        // Safety: Ranking > 200 AND within budget AND GPA >= 3.0
         if (ranking > 200 && tuition <= userBudget && userGPA >= 3.0) {
-            return {
-                category: 'safety',
-                reason: 'Good fit for your profile'
-            }
+            return { category: 'safety', reason: 'Good fit for your profile' }
         }
 
-        // Target: Everything in between
-        return {
-            category: 'target',
-            reason: 'Matches your profile'
-        }
+        return { category: 'target', reason: 'Matches your profile' }
     }
 
-    // Cost affordability tier based on user's budget
     const getCostTier = (university: University): { tier: 'low' | 'medium' | 'high', label: string, color: string } => {
         const userBudget = profile?.budget_max || 100000
         const tuition = university.tuitionMin || university.tuitionMax || 30000
         const ratio = tuition / userBudget
 
         if (ratio <= 0.6) {
-            return { tier: 'low', label: 'Affordable', color: 'bg-green-500/20 border-green-500/40 text-green-400' }
+            return { tier: 'low', label: 'Affordable', color: 'bg-green-100 text-green-600' }
         } else if (ratio <= 1.0) {
-            return { tier: 'medium', label: 'Within Budget', color: 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' }
+            return { tier: 'medium', label: 'Within Budget', color: 'bg-yellow-100 text-yellow-600' }
         } else {
-            return { tier: 'high', label: 'Above Budget', color: 'bg-red-500/20 border-red-500/40 text-red-400' }
+            return { tier: 'high', label: 'Above Budget', color: 'bg-red-100 text-red-600' }
         }
     }
 
-    // Acceptance probability tier based on profile strength
     const getAcceptanceTier = (university: University): { tier: 'low' | 'medium' | 'high', label: string, color: string } => {
         const userGPA = profile?.gpa || 0
         const hasEnglishTest = !!(profile?.ielts || profile?.toefl)
         const hasGradTest = !!(profile?.gre || profile?.gmat)
         const ranking = university.ranking || 500
 
-        // Calculate a simple score
         let score = 0
-
-        // GPA contribution (0-40 points)
         if (userGPA >= 3.8) score += 40
         else if (userGPA >= 3.5) score += 30
         else if (userGPA >= 3.0) score += 20
         else score += 10
 
-        // Test contribution (0-30 points)
         if (hasEnglishTest) score += 15
         if (hasGradTest) score += 15
-
-        // Ranking adjustment (0-30 points) - easier to get into lower ranked schools
         if (ranking > 200) score += 30
         else if (ranking > 100) score += 20
         else if (ranking > 50) score += 10
 
         if (score >= 70) {
-            return { tier: 'high', label: 'High Chance', color: 'bg-green-500/20 border-green-500/40 text-green-400' }
+            return { tier: 'high', label: 'High Chance', color: 'bg-green-100 text-green-600' }
         } else if (score >= 40) {
-            return { tier: 'medium', label: 'Moderate Chance', color: 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400' }
+            return { tier: 'medium', label: 'Moderate', color: 'bg-yellow-100 text-yellow-600' }
         } else {
-            return { tier: 'low', label: 'Competitive', color: 'bg-red-500/20 border-red-500/40 text-red-400' }
+            return { tier: 'low', label: 'Competitive', color: 'bg-red-100 text-red-600' }
         }
     }
 
@@ -219,208 +186,171 @@ export default function Discover() {
     })
 
     return (
-        <div className="min-h-screen">
-            <Navbar />
+        <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Discover Universities</h1>
+                <p className="text-gray-500 text-sm">Find universities that match your profile</p>
+            </div>
 
-            <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
-                {/* Header */}
-                <div className="mb-8 sm:mb-10 border-b border-white/10 pb-6 sm:pb-8">
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-4 text-white tracking-tight">Discover Universities</h1>
-                    <p className="text-neutral-400 text-sm sm:text-lg max-w-2xl">
-                        Find and shortlist universities that match your profile using our AI-powered database.
-                    </p>
+            {/* Search & Filters */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm mb-6">
+                <div className="flex flex-col md:flex-row gap-4 mb-5">
+                    <div className="flex-1 relative">
+                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Input
+                            placeholder="Search universities..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            className="pl-10 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300 h-11 rounded-xl"
+                        />
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-1 sm:flex-none">
+                            <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <Input
+                                type="number"
+                                placeholder="Max Budget"
+                                value={budgetFilter}
+                                onChange={(e) => setBudgetFilter(e.target.value)}
+                                className="pl-9 w-full sm:w-36 bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-gray-300 h-11 rounded-xl"
+                            />
+                        </div>
+                        <button
+                            onClick={handleSearch}
+                            className="px-5 h-11 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Filter size={16} /> Filter
+                        </button>
+                    </div>
                 </div>
 
-                {/* Search & Filters */}
-                <Card className="mb-10 bg-[#0A0A0A] border-white/10 p-0 overflow-hidden">
-                    <CardContent className="p-6 md:p-8">
-                        <div className="flex flex-col md:flex-row gap-6 mb-6">
-                            <div className="flex-1 relative">
-                                <Search
-                                    size={20}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                                />
-                                <Input
-                                    placeholder="Search universities..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    className="pl-12 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                />
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <div className="relative w-full sm:w-auto">
-                                    <DollarSign
-                                        size={18}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                                    />
-                                    <Input
-                                        type="number"
-                                        placeholder="Budget Limit"
-                                        value={budgetFilter}
-                                        onChange={(e) => setBudgetFilter(e.target.value)}
-                                        className="pl-11 w-full sm:w-48 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                    />
-                                </div>
-                                <Button variant="sharp" onClick={handleSearch} className="h-12 px-8 w-full sm:w-auto">
-                                    <Filter size={18} className="mr-2" /> FILTER
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Country Filters */}
-                        <div>
-                            <p className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 mb-3">Filter by Country</p>
-                            <div className="flex flex-wrap gap-2">
-                                {COUNTRIES.map((country) => (
-                                    <Badge
-                                        key={country}
-                                        variant={selectedCountry === country ? 'secondary' : 'outline'}
-                                        className={`cursor-pointer px-4 py-2 border-white/10 ${selectedCountry === country
-                                            ? 'bg-white text-black hover:bg-neutral-200'
-                                            : 'text-neutral-400 hover:text-white hover:border-white/30 hover:bg-neutral-900'
-                                            }`}
-                                        onClick={() => handleCountryFilter(country)}
-                                    >
-                                        {country}
-                                    </Badge>
-                                ))}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Results */}
-                {loading ? (
-                    <div className="flex items-center justify-center py-32">
-                        <Loader2 size={48} className="animate-spin text-white" />
+                {/* Country Filters */}
+                <div>
+                    <p className="text-xs font-medium text-gray-500 mb-3">Filter by Country</p>
+                    <div className="flex flex-wrap gap-2">
+                        {COUNTRIES.map((country) => (
+                            <button
+                                key={country}
+                                onClick={() => handleCountryFilter(country)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${selectedCountry === country
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                            >
+                                {country}
+                            </button>
+                        ))}
                     </div>
-                ) : filteredUniversities.length === 0 ? (
-                    <div className="text-center py-32 border border-dashed border-white/10 rounded-lg">
-                        <GraduationCap size={48} className="mx-auto mb-4 text-neutral-700" />
-                        <p className="text-neutral-500 text-lg">No universities found matching your criteria.</p>
-                        <Button variant="link" className="text-white mt-2" onClick={() => {
-                            setSearchQuery('');
-                            setSelectedCountry('');
-                            setBudgetFilter('');
-                            handleSearch();
-                        }}>
-                            Clear all filters
-                        </Button>
-                    </div>
-                ) : (
-                    <>
-                        <div className="flex items-center justify-between mb-6">
-                            <p className="text-sm font-mono text-neutral-500">
-                                SHOWING {filteredUniversities.length} UNIVERSITIES
-                            </p>
-                        </div>
+                </div>
+            </div>
 
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredUniversities.map((university) => (
-                                <Card
+            {/* Results */}
+            {loading ? (
+                <div className="flex items-center justify-center py-20">
+                    <Loader2 size={32} className="animate-spin text-gray-400" />
+                </div>
+            ) : filteredUniversities.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
+                    <GraduationCap size={40} className="mx-auto mb-4 text-gray-300" />
+                    <p className="text-gray-500">No universities found matching your criteria.</p>
+                    <button
+                        onClick={() => { setSearchQuery(''); setSelectedCountry(''); setBudgetFilter(''); handleSearch(); }}
+                        className="text-gray-900 font-medium text-sm mt-2 hover:underline"
+                    >
+                        Clear all filters
+                    </button>
+                </div>
+            ) : (
+                <>
+                    <p className="text-sm text-gray-400 mb-4">{filteredUniversities.length} universities found</p>
+
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredUniversities.map((university) => {
+                            const suggestion = getAISuggestion(university)
+                            const costTier = getCostTier(university)
+                            const acceptTier = getAcceptanceTier(university)
+                            const categoryColors = {
+                                reach: 'bg-purple-100 text-purple-600',
+                                target: 'bg-blue-100 text-blue-600',
+                                safety: 'bg-green-100 text-green-600'
+                            }
+                            const categoryLabels = { reach: 'Dream', target: 'Target', safety: 'Safe' }
+
+                            return (
+                                <div
                                     key={university.id}
-                                    className="bg-[#0A0A0A] border-white/10 hover:border-white/30 transition-all duration-300 group"
+                                    className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow"
                                 >
-                                    <CardContent className="p-4 sm:p-6">
-                                        <div className="flex items-start justify-between mb-6">
-                                            <div className="w-12 h-12 bg-neutral-900 border border-white/10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-colors duration-300">
-                                                <GraduationCap size={24} />
-                                            </div>
-                                            <Badge variant="outline" className="text-[10px] font-mono border-white/20 text-neutral-400 bg-transparent">
-                                                RANK #{university.ranking}
-                                            </Badge>
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                            <GraduationCap size={20} className="text-gray-500" />
+                                        </div>
+                                        <span className="text-xs font-medium text-gray-400">#{university.ranking}</span>
+                                    </div>
+
+                                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
+                                        {university.name}
+                                    </h3>
+
+                                    <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-4">
+                                        <MapPin size={14} />
+                                        <span className="truncate">{university.state ? `${university.state}, ` : ''}{university.country}</span>
+                                    </div>
+
+                                    <div className="border-t border-gray-100 pt-4 mb-4">
+                                        <div className="flex items-center justify-between text-sm mb-3">
+                                            <span className="text-gray-400">Tuition</span>
+                                            <span className="font-medium text-gray-900">
+                                                ${university.tuitionMin?.toLocaleString()} - ${university.tuitionMax?.toLocaleString()}/yr
+                                            </span>
                                         </div>
 
-                                        <h3 className="font-bold text-xl mb-2 text-white line-clamp-2 min-h-[3.5rem]">
-                                            {university.name}
-                                        </h3>
-
-                                        <div className="flex items-center gap-2 text-sm text-neutral-400 mb-6 font-mono">
-                                            <MapPin size={14} />
-                                            <span className="truncate">{university.state ? `${university.state}, ` : ''}{university.country}</span>
+                                        {/* AI Suggestion */}
+                                        <div className={`flex items-center justify-between p-2.5 rounded-xl mb-3 ${categoryColors[suggestion.category]}`}>
+                                            <span className="text-xs font-medium">{categoryLabels[suggestion.category]}</span>
+                                            <span className="text-xs opacity-70">{suggestion.reason}</span>
                                         </div>
 
-                                        <div className="border-t border-white/5 pt-4 mb-4">
-                                            <div className="flex items-center justify-between text-sm">
-                                                <span className="text-neutral-500 font-mono text-xs uppercase">Est. Tuition</span>
-                                                <div className="flex items-center gap-1 text-white font-medium">
-                                                    <span>
-                                                        ${university.tuitionMin?.toLocaleString()} - ${university.tuitionMax?.toLocaleString()}/yr
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* AI Suggestion Badge */}
-                                        {(() => {
-                                            const suggestion = getAISuggestion(university)
-                                            const categoryColors = {
-                                                reach: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
-                                                target: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
-                                                safety: 'bg-green-500/10 border-green-500/30 text-green-400'
-                                            }
-                                            const categoryLabels = { reach: 'DREAM', target: 'TARGET', safety: 'SAFE' }
-                                            return (
-                                                <div className={`flex items-center justify-between p-3 border mb-3 ${categoryColors[suggestion.category]}`}>
-                                                    <div>
-                                                        <p className="text-[10px] font-mono uppercase tracking-wider opacity-70">AI Suggestion</p>
-                                                        <p className="text-sm font-medium">{categoryLabels[suggestion.category]}</p>
-                                                    </div>
-                                                    <p className="text-xs opacity-70">{suggestion.reason}</p>
-                                                </div>
-                                            )
-                                        })()}
-
-                                        {/* Cost & Acceptance Tiers */}
+                                        {/* Tiers */}
                                         <div className="grid grid-cols-2 gap-2 mb-4">
-                                            {(() => {
-                                                const costTier = getCostTier(university)
-                                                return (
-                                                    <div className={`p-2 border ${costTier.color}`}>
-                                                        <p className="text-[9px] font-mono uppercase tracking-wider opacity-70">Cost</p>
-                                                        <p className="text-xs font-medium">{costTier.label}</p>
-                                                    </div>
-                                                )
-                                            })()}
-                                            {(() => {
-                                                const acceptTier = getAcceptanceTier(university)
-                                                return (
-                                                    <div className={`p-2 border ${acceptTier.color}`}>
-                                                        <p className="text-[9px] font-mono uppercase tracking-wider opacity-70">Admission</p>
-                                                        <p className="text-xs font-medium">{acceptTier.label}</p>
-                                                    </div>
-                                                )
-                                            })()}
+                                            <div className={`p-2 rounded-lg text-center ${costTier.color}`}>
+                                                <p className="text-[10px] uppercase font-medium opacity-70">Cost</p>
+                                                <p className="text-xs font-medium">{costTier.label}</p>
+                                            </div>
+                                            <div className={`p-2 rounded-lg text-center ${acceptTier.color}`}>
+                                                <p className="text-[10px] uppercase font-medium opacity-70">Admission</p>
+                                                <p className="text-xs font-medium">{acceptTier.label}</p>
+                                            </div>
                                         </div>
+                                    </div>
 
-                                        {isInShortlist(university.id) ? (
-                                            <Button variant="outline" className="w-full border-white/20 text-neutral-300 bg-neutral-900/50 cursor-default hover:bg-neutral-900/50">
-                                                <Check size={16} className="mr-2" /> SHORTLISTED
-                                            </Button>
-                                        ) : (
-                                            <Button
-                                                variant="sharp"
-                                                className="w-full text-[10px] sm:text-xs font-mono uppercase tracking-wider bg-white text-black hover:bg-neutral-200 h-10 cursor-pointer"
-                                                onClick={() => handleAddToShortlist(university, getAISuggestion(university).category)}
-                                                disabled={addingId === university.id}
-                                            >
-                                                {addingId === university.id ? (
-                                                    <Loader2 size={16} className="animate-spin" />
-                                                ) : (
-                                                    <>
-                                                        <Plus size={16} className="mr-2" /> ADD AS {getAISuggestion(university).category === 'reach' ? 'DREAM' : getAISuggestion(university).category === 'target' ? 'TARGET' : 'SAFE'}
-                                                    </>
-                                                )}
-                                            </Button>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    </>
-                )}
-            </main>
+                                    {isInShortlist(university.id) ? (
+                                        <button className="w-full py-2.5 bg-gray-100 text-gray-500 rounded-xl text-sm font-medium flex items-center justify-center gap-2">
+                                            <Check size={16} /> Shortlisted
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleAddToShortlist(university, suggestion.category)}
+                                            disabled={addingId === university.id}
+                                            className="w-full py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            {addingId === university.id ? (
+                                                <Loader2 size={16} className="animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <Plus size={16} /> Add as {categoryLabels[suggestion.category]}
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </>
+            )}
         </div>
     )
 }

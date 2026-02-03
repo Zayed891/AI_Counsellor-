@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@/context/AuthContext'
 import { UserProvider } from '@/context/UserContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import DashboardLayout from '@/components/Layout/DashboardLayout'
 import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
 import Signup from '@/pages/Signup'
@@ -32,46 +33,18 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/discover"
-              element={
-                <ProtectedRoute>
-                  <Discover />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/shortlist"
-              element={
-                <ProtectedRoute>
-                  <Shortlist />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/counselor"
-              element={
-                <ProtectedRoute>
-                  <Counselor />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/guidance"
-              element={
-                <ProtectedRoute>
-                  <Guidance />
-                </ProtectedRoute>
-              }
-            />
+            {/* Protected Routes with Dashboard Layout */}
+            <Route element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="/shortlist" element={<Shortlist />} />
+              <Route path="/counselor" element={<Counselor />} />
+              <Route path="/guidance" element={<Guidance />} />
+            </Route>
           </Routes>
         </UserProvider>
       </AuthProvider>

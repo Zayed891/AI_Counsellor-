@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { GraduationCap, Mail, Lock, ArrowRight } from 'lucide-react'
+import { GraduationCap, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react'
 
 export default function Login() {
     const [email, setEmail] = useState('')
@@ -23,13 +23,11 @@ export default function Login() {
         const { error } = await signIn(email, password)
 
         if (error) {
-            setError(error.message)
+            setError('The email or password you entered is incorrect.')
             setLoading(false)
             return
         }
 
-        // Redirect based on onboarding status
-        // Fetch fresh profile data to ensure we have the latest status
         const { data: { user } } = await supabase.auth.getUser()
 
         if (user) {
@@ -57,152 +55,148 @@ export default function Login() {
             setError(error.message)
             setLoading(false)
         }
-        // Redirect is handled by Supabase automatically
     }
 
     return (
-        <div className="min-h-screen grid lg:grid-cols-2 bg-black">
-            {/* Left - Form */}
-            <div className="flex flex-col p-8 lg:p-12 bg-black border-r border-white/5">
-                <Link to="/" className="flex items-center gap-2 text-white mb-16">
-                    <GraduationCap size={28} />
-                    <span className="font-bold text-xl tracking-tight">AI Counsellor</span>
-                </Link>
+        <div className="h-screen w-full relative flex items-center justify-center bg-zinc-50 font-sans overflow-hidden">
+            {/* Background Image with Overlay */}
+            <div className="absolute inset-0 z-0">
+                <img
+                    src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=1920&auto=format&fit=crop"
+                    alt="University Campus"
+                    className="w-full h-full object-cover"
+                />
+                <div
+                    className="absolute inset-0 mix-blend-multiply"
+                    style={{
+                        background: 'linear-gradient(180deg, #D6E4FF 0%, #9AE3F8 100%)',
+                        opacity: 0.2
+                    }}
+                />
+            </div>
 
-                <div className="flex-1 flex flex-col justify-center max-w-md">
-                    <h1 className="text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight">
-                        Welcome Back
-                    </h1>
-                    <p className="text-neutral-400 mb-8 text-lg">
-                        Continue your journey to finding the perfect university.
+            {/* Login Card */}
+            <div className="relative z-10 w-full max-w-md bg-white rounded-[16px] shadow-[0px_8px_10px_-6px_#0000001A,0px_20px_25px_-5px_#0000001A] border border-slate-100 p-6 sm:p-8 mx-4 flex flex-col">
+                {/* Back to Home */}
+                <div className="flex-none mb-3">
+                    <Link to="/" className="inline-flex items-center text-xs text-muted-foreground hover:text-primary transition-colors">
+                        <ArrowRight className="mr-2 h-3 w-3 rotate-180" /> Back to Home
+                    </Link>
+                </div>
+
+                {/* Header */}
+                <div className="flex flex-col gap-[6px] text-center mb-6">
+                    <h1 className="text-2xl sm:text-[30px] font-bold text-[#0F172B] m-0 leading-tight tracking-[0.4px]">Welcome Back</h1>
+                    <p className="text-sm sm:text-base font-normal text-[#62748E] m-0 leading-relaxed tracking-[-0.31px]">
+                        Enter your credentials to access your <span className="bg-yellow-200 px-1 rounded-sm text-foreground font-medium">dashboard</span>
                     </p>
+                </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Form Container */}
+                <div className="flex-1">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Error Message */}
                         {error && (
-                            <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-mono">
+                            <div className="p-2.5 bg-red-50 border border-red-100 text-red-600 text-xs rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                                <AlertCircle size={14} />
                                 {error}
                             </div>
                         )}
 
                         <div className="space-y-3">
-                            <Label htmlFor="email" className="text-xs font-mono uppercase tracking-wider text-neutral-500">Email Address</Label>
-                            <div className="relative">
-                                <Mail
-                                    size={18}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                                />
+                            <div className="flex flex-col gap-1">
+                                <Label htmlFor="email" className="font-sans font-medium text-[14px] leading-[20px] tracking-[-0.15px] text-[#314158]">Email Address</Label>
                                 <Input
                                     id="email"
                                     type="email"
-                                    placeholder="you@example.com"
+                                    placeholder="student@example.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className="pl-11 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
+                                    className="h-10 bg-white border-zinc-200 focus:border-blue-500 focus:ring-blue-500/20 text-sm"
                                     required
                                 />
                             </div>
+
+                            <div className="flex flex-col gap-1">
+                                <Label htmlFor="password" className="font-sans font-medium text-[14px] leading-[20px] tracking-[-0.15px] text-[#314158]">Password</Label>
+                                <div className="relative">
+                                    <Input
+                                        id="password"
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="h-10 bg-white border-zinc-200 focus:border-blue-500 focus:ring-blue-500/20 pr-10 text-sm"
+                                        required
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute right-0 top-0 h-10 w-10 text-muted-foreground hover:bg-transparent"
+                                    >
+                                        <Lock size={14} />
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="flex justify-end">
+                                <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline font-medium">
+                                    Forgot password?
+                                </Link>
+                            </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <Label htmlFor="password" className="text-xs font-mono uppercase tracking-wider text-neutral-500">Password</Label>
-                            <div className="relative">
-                                <Lock
-                                    size={18}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"
-                                />
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="pl-11 bg-neutral-900 border-white/10 text-white placeholder:text-neutral-600 focus:border-white/30 h-12"
-                                    required
-                                />
+                        <Button type="submit" className="w-full h-10 text-sm bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20" disabled={loading}>
+                            {loading ? 'Logging in...' : 'Log In'}
+                        </Button>
+
+                        <div className="relative py-1">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-zinc-100" />
+                            </div>
+                            <div className="relative flex justify-center text-[10px] uppercase">
+                                <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
                             </div>
                         </div>
 
                         <Button
-                            type="submit"
-                            variant="sharp"
-                            size="lg"
-                            className="w-full h-12 text-base"
+                            type="button"
+                            variant="outline"
+                            onClick={handleGoogleSignIn}
+                            className="w-full h-10 gap-2 border-zinc-200 bg-white hover:bg-zinc-50 text-foreground font-medium text-sm"
                             disabled={loading}
                         >
-                            {loading ? 'SIGNING IN...' : 'SIGN IN'} <ArrowRight size={18} />
+                            <svg className="h-4 w-4" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                    fill="#4285F4"
+                                />
+                                <path
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                    fill="#34A853"
+                                />
+                                <path
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z"
+                                    fill="#FBBC05"
+                                />
+                                <path
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                    fill="#EA4335"
+                                />
+                            </svg>
+                            Google
                         </Button>
                     </form>
-
-                    <div className="relative my-8">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-white/10" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-black px-2 text-neutral-500 font-mono">Or continue with</span>
-                        </div>
-                    </div>
-
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={handleGoogleSignIn}
-                        className="w-full h-12 bg-white text-black hover:bg-neutral-200 border-none font-bold tracking-wide"
-                        disabled={loading}
-                    >
-                        <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                            <path
-                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                fill="#4285F4"
-                            />
-                            <path
-                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                fill="#34A853"
-                            />
-                            <path
-                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.84z"
-                                fill="#FBBC05"
-                            />
-                            <path
-                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                fill="#EA4335"
-                            />
-                        </svg>
-                        GOOGLE
-                    </Button>
-
-                    <p className="mt-8 text-center text-neutral-500">
-                        Don't have an account?{' '}
-                        <Link to="/signup" className="text-white hover:text-neutral-300 font-medium hover:underline decoration-white/30 underline-offset-4">
-                            Sign up
-                        </Link>
-                    </p>
                 </div>
+
+                <p className="text-center text-xs text-muted-foreground mt-6">
+                    Don't have an account?{' '}
+                    <Link to="/signup" className="text-blue-600 font-semibold hover:underline">
+                        Sign up
+                    </Link>
+                </p>
             </div>
 
-            {/* Right - Visual */}
-            <div className="hidden lg:flex items-center justify-center bg-[#050505] p-12 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-radial from-white/5 to-transparent opacity-50" />
-                <div className="max-w-md text-center relative z-10">
-                    <h2 className="text-4xl font-extrabold mb-6 text-white tracking-tight">
-                        Find Your Dream University
-                    </h2>
-                    <p className="text-neutral-400 mb-12 text-lg leading-relaxed">
-                        AI-powered recommendations tailored to your profile, budget, and aspirations.
-                    </p>
-                    <div className="space-y-4 text-left inline-block">
-                        {[
-                            '500+ Universities',
-                            'Personalized Matching',
-                            'AI Counselor Chat'
-                        ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-3 text-neutral-300 font-mono text-sm">
-                                <div className="w-5 h-5 bg-white text-black flex items-center justify-center text-[10px] font-bold">✓</div>
-                                {item}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
         </div>
     )
 }

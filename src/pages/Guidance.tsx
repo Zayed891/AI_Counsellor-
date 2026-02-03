@@ -1,10 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useUser } from '@/context/UserContext'
 import { useAuth } from '@/context/AuthContext'
-import Navbar from '@/components/Navbar'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
     GraduationCap,
     FileText,
@@ -13,12 +9,11 @@ import {
     Circle,
     Lock,
     ArrowRight,
-    AlertTriangle,
+    MessageSquare,
     MapPin,
     Trash2,
 } from 'lucide-react'
 
-// Document checklist for applications
 const REQUIRED_DOCUMENTS = [
     { id: 'passport', title: 'Valid Passport', description: 'Ensure at least 6 months validity' },
     { id: 'transcript', title: 'Academic Transcripts', description: 'Official sealed transcripts from institution' },
@@ -29,7 +24,6 @@ const REQUIRED_DOCUMENTS = [
     { id: 'financial', title: 'Financial Documents', description: 'Bank statements, sponsorship letters' },
 ]
 
-// Timeline milestones
 const TIMELINE = [
     { month: 'Month 1-2', action: 'Finalize university list & prepare documents' },
     { month: 'Month 3', action: 'Submit applications & pay fees' },
@@ -45,7 +39,6 @@ export default function Guidance() {
     const lockedUniversities = getLockedUniversities()
     const hasLockedUniversities = lockedUniversities.length > 0
 
-    // Check document readiness from profile
     const getDocStatus = (docId: string) => {
         switch (docId) {
             case 'passport': return profile?.has_passport
@@ -58,228 +51,213 @@ export default function Guidance() {
 
     if (!hasLockedUniversities) {
         return (
-            <div className="min-h-screen">
-                <Navbar />
-                <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
-                    <Card className="bg-[#0A0A0A] border-white/10 py-20">
-                        <CardContent className="text-center max-w-lg mx-auto">
-                            <div className="w-20 h-20 mx-auto mb-8 bg-neutral-900 border border-white/10 flex items-center justify-center">
-                                <Lock size={36} className="text-neutral-400" />
-                            </div>
-                            <h1 className="text-3xl font-bold text-white mb-4">Application Guidance Locked</h1>
-                            <p className="text-neutral-400 mb-8 leading-relaxed">
-                                You need to lock at least one university to access personalized application guidance.
-                                Locking universities signals your intent to apply and unlocks tailored strategies.
-                            </p>
-                            <Button variant="sharp" size="lg" asChild>
-                                <Link to="/shortlist">
-                                    Go to Shortlist <ArrowRight size={18} />
-                                </Link>
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </main>
+            <div className="max-w-5xl mx-auto">
+                <div className="bg-white rounded-2xl border border-gray-200 p-10 shadow-sm text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Lock size={28} className="text-gray-400" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-3">Application Guidance Locked</h1>
+                    <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                        You need to lock at least one university to access personalized application guidance.
+                    </p>
+                    <Link
+                        to="/shortlist"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+                    >
+                        Go to Shortlist <ArrowRight size={16} />
+                    </Link>
+                </div>
             </div>
         )
     }
 
     return (
-        <div className="min-h-screen">
-            <Navbar />
+        <div className="max-w-5xl mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+                <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full mb-3">
+                    APPLICATION GUIDANCE
+                </span>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Your Application Strategy</h1>
+                <p className="text-gray-500 text-sm">
+                    Personalized guidance for your {lockedUniversities.length} locked {lockedUniversities.length === 1 ? 'university' : 'universities'}.
+                </p>
+            </div>
 
-            <main className="max-w-[1400px] mx-auto px-4 sm:px-8 lg:px-12 pt-20 sm:pt-24 pb-12 sm:pb-20">
-                {/* Header */}
-                <div className="mb-8 sm:mb-10 border-b border-white/10 pb-6 sm:pb-8">
-                    <Badge variant="secondary" className="mb-4 border-white/20">APPLICATION GUIDANCE</Badge>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-4 text-white tracking-tight">
-                        Your Application Strategy
-                    </h1>
-                    <p className="text-neutral-400 text-sm sm:text-lg">
-                        Personalized guidance for your {lockedUniversities.length} locked {lockedUniversities.length === 1 ? 'university' : 'universities'}.
-                    </p>
-                </div>
-
-                <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Left Column */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Locked Universities */}
-                        <Card className="bg-[#0A0A0A] border-white/10">
-                            <CardHeader className="border-b border-white/5 pb-6">
-                                <CardTitle className="text-xl flex items-center gap-3">
-                                    <Lock size={20} className="text-green-500" /> Locked Universities
-                                </CardTitle>
-                                <CardDescription className="text-neutral-500">
-                                    Your confirmed application targets
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                <div className="space-y-4">
-                                    {lockedUniversities.map((item) => (
-                                        <div
-                                            key={item.id}
-                                            className="flex items-center justify-between p-4 border border-green-500/20 bg-green-500/5"
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-neutral-900 border border-white/10 flex items-center justify-center">
-                                                    <GraduationCap size={18} />
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-white">{item.university?.name}</p>
-                                                    <div className="flex items-center gap-2 text-sm text-neutral-500">
-                                                        <MapPin size={12} />
-                                                        {item.university?.country}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                                {item.category?.toUpperCase()}
-                                            </Badge>
+            <div className="grid lg:grid-cols-3 gap-6">
+                {/* Left Column */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* Locked Universities */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="p-5 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <Lock size={18} className="text-green-500" />
+                                <h2 className="font-semibold text-gray-900">Locked Universities</h2>
+                            </div>
+                            <p className="text-gray-500 text-sm mt-1">Your confirmed application targets</p>
+                        </div>
+                        <div className="p-5 space-y-3">
+                            {lockedUniversities.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex items-center justify-between p-4 rounded-xl border border-green-200 bg-green-50"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center">
+                                            <GraduationCap size={18} className="text-gray-500" />
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Document Checklist */}
-                        <Card className="bg-[#0A0A0A] border-white/10">
-                            <CardHeader className="border-b border-white/5 pb-6">
-                                <CardTitle className="text-xl flex items-center gap-3">
-                                    <FileText size={20} /> Document Checklist
-                                </CardTitle>
-                                <CardDescription className="text-neutral-500">
-                                    Required documents for your applications
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                <div className="space-y-3">
-                                    {REQUIRED_DOCUMENTS.map((doc) => {
-                                        const isReady = getDocStatus(doc.id)
-                                        return (
-                                            <div
-                                                key={doc.id}
-                                                className={`flex items-start gap-4 p-4 border ${isReady
-                                                    ? 'border-green-500/20 bg-green-500/5'
-                                                    : 'border-white/10 bg-neutral-900/30'
-                                                    }`}
-                                            >
-                                                {isReady ? (
-                                                    <CheckCircle2 size={20} className="text-green-500 shrink-0 mt-0.5" />
-                                                ) : (
-                                                    <Circle size={20} className="text-neutral-500 shrink-0 mt-0.5" />
-                                                )}
-                                                <div>
-                                                    <p className={`font-medium ${isReady ? 'text-white' : 'text-neutral-300'}`}>
-                                                        {doc.title}
-                                                    </p>
-                                                    <p className="text-sm text-neutral-500">{doc.description}</p>
-                                                </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">{item.university?.name}</p>
+                                            <div className="flex items-center gap-1 text-sm text-gray-500">
+                                                <MapPin size={12} />
+                                                {item.university?.country}
                                             </div>
-                                        )
-                                    })}
+                                        </div>
+                                    </div>
+                                    <span className="px-3 py-1 bg-green-100 text-green-600 text-xs font-medium rounded-lg">
+                                        {item.category?.toUpperCase()}
+                                    </span>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Right Column */}
-                    <div className="space-y-8">
-                        {/* Timeline */}
-                        <Card className="bg-[#0A0A0A] border-white/10">
-                            <CardHeader className="border-b border-white/5 pb-6">
-                                <CardTitle className="text-lg flex items-center gap-3">
-                                    <Calendar size={18} /> Application Timeline
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                <div className="space-y-4">
-                                    {TIMELINE.map((item, index) => (
-                                        <div key={index} className="flex gap-4">
-                                            <div className="w-2 h-2 bg-white mt-2 shrink-0" />
-                                            <div>
-                                                <p className="text-xs font-mono text-neutral-500 uppercase tracking-wider mb-1">
-                                                    {item.month}
-                                                </p>
-                                                <p className="text-sm text-white">{item.action}</p>
-                                            </div>
+                    {/* Document Checklist */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="p-5 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <FileText size={18} className="text-gray-500" />
+                                <h2 className="font-semibold text-gray-900">Document Checklist</h2>
+                            </div>
+                            <p className="text-gray-500 text-sm mt-1">Required documents for your applications</p>
+                        </div>
+                        <div className="p-5 space-y-2">
+                            {REQUIRED_DOCUMENTS.map((doc) => {
+                                const isReady = getDocStatus(doc.id)
+                                return (
+                                    <div
+                                        key={doc.id}
+                                        className={`flex items-start gap-3 p-4 rounded-xl ${isReady
+                                                ? 'bg-green-50 border border-green-200'
+                                                : 'bg-gray-50 border border-gray-200'
+                                            }`}
+                                    >
+                                        {isReady ? (
+                                            <CheckCircle2 size={18} className="text-green-500 shrink-0 mt-0.5" />
+                                        ) : (
+                                            <Circle size={18} className="text-gray-400 shrink-0 mt-0.5" />
+                                        )}
+                                        <div>
+                                            <p className={`font-medium ${isReady ? 'text-gray-900' : 'text-gray-700'}`}>
+                                                {doc.title}
+                                            </p>
+                                            <p className="text-sm text-gray-500">{doc.description}</p>
                                         </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    </div>
+                </div>
 
-                        {/* AI Tasks */}
-                        <Card className="bg-[#0A0A0A] border-white/10">
-                            <CardHeader className="border-b border-white/5 pb-6">
-                                <CardTitle className="text-lg">Application Tasks</CardTitle>
-                                <CardDescription className="text-neutral-500">
-                                    {tasks.filter(t => t.category === 'applications' && !t.is_completed).length} pending
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="pt-6">
-                                {tasks.filter(t => t.category === 'applications').length === 0 ? (
-                                    <div className="text-center py-6">
-                                        <p className="text-neutral-500 text-sm">
-                                            No application tasks yet. Use AI Counselor to generate tasks.
+                {/* Right Column */}
+                <div className="space-y-6">
+                    {/* Timeline */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="p-5 border-b border-gray-100">
+                            <div className="flex items-center gap-2">
+                                <Calendar size={18} className="text-gray-500" />
+                                <h2 className="font-semibold text-gray-900">Application Timeline</h2>
+                            </div>
+                        </div>
+                        <div className="p-5 space-y-4">
+                            {TIMELINE.map((item, index) => (
+                                <div key={index} className="flex gap-3">
+                                    <div className="w-2 h-2 bg-gray-900 rounded-full mt-2 shrink-0" />
+                                    <div>
+                                        <p className="text-xs font-medium text-gray-400 uppercase mb-1">
+                                            {item.month}
                                         </p>
-                                        <Button variant="sharp" size="sm" className="mt-4" asChild>
-                                            <Link to="/counselor">Open AI Counselor</Link>
-                                        </Button>
+                                        <p className="text-sm text-gray-700">{item.action}</p>
                                     </div>
-                                ) : (
-                                    <div className="space-y-3">
-                                        {tasks.filter(t => t.category === 'applications').slice(0, 5).map((task) => (
-                                            <div
-                                                key={task.id}
-                                                className={`flex items-start gap-3 p-3 border ${task.is_completed
-                                                    ? 'border-white/5 opacity-60'
-                                                    : 'border-white/10'
-                                                    }`}
-                                            >
-                                                <button
-                                                    onClick={() => toggleTask(task.id)}
-                                                    className="shrink-0 mt-0.5 cursor-pointer"
-                                                >
-                                                    {task.is_completed ? (
-                                                        <CheckCircle2 size={16} className="text-green-500" />
-                                                    ) : (
-                                                        <Circle size={16} className="text-neutral-500 hover:text-white" />
-                                                    )}
-                                                </button>
-                                                <p className={`flex-1 text-sm ${task.is_completed ? 'line-through text-neutral-500' : 'text-white'}`}>
-                                                    {task.title}
-                                                </p>
-                                                <button
-                                                    onClick={() => deleteTask(task.id)}
-                                                    className="shrink-0 text-neutral-500 hover:text-red-400 transition-colors cursor-pointer"
-                                                    title="Delete task"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                        {/* CTA */}
-                        <Card className="bg-gradient-to-br from-neutral-900 to-black border-white/10">
-                            <CardContent className="py-8 text-center">
-                                <AlertTriangle size={24} className="mx-auto mb-4 text-yellow-500" />
-                                <p className="text-white font-medium mb-2">Need help?</p>
-                                <p className="text-neutral-400 text-sm mb-4">
-                                    Ask your AI Counselor for personalized application strategies.
-                                </p>
-                                <Button variant="sharp" size="sm" className="w-full" asChild>
-                                    <Link to="/counselor">
-                                        Talk to AI Counselor <ArrowRight size={16} />
+                    {/* Application Tasks */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="p-5 border-b border-gray-100">
+                            <h2 className="font-semibold text-gray-900">Application Tasks</h2>
+                            <p className="text-gray-500 text-sm mt-1">
+                                {tasks.filter(t => t.category === 'applications' && !t.is_completed).length} pending
+                            </p>
+                        </div>
+                        <div className="p-5">
+                            {tasks.filter(t => t.category === 'applications').length === 0 ? (
+                                <div className="text-center py-4">
+                                    <p className="text-gray-500 text-sm mb-3">
+                                        No application tasks yet.
+                                    </p>
+                                    <Link
+                                        to="/counselor"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                                    >
+                                        Open AI Counsellor
                                     </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {tasks.filter(t => t.category === 'applications').slice(0, 5).map((task) => (
+                                        <div
+                                            key={task.id}
+                                            className={`flex items-start gap-3 p-3 rounded-xl ${task.is_completed
+                                                    ? 'bg-gray-50 opacity-60'
+                                                    : 'bg-gray-50'
+                                                }`}
+                                        >
+                                            <button
+                                                onClick={() => toggleTask(task.id)}
+                                                className="shrink-0 mt-0.5"
+                                            >
+                                                {task.is_completed ? (
+                                                    <CheckCircle2 size={16} className="text-green-500" />
+                                                ) : (
+                                                    <Circle size={16} className="text-gray-400 hover:text-gray-600" />
+                                                )}
+                                            </button>
+                                            <p className={`flex-1 text-sm ${task.is_completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                                                {task.title}
+                                            </p>
+                                            <button
+                                                onClick={() => deleteTask(task.id)}
+                                                className="shrink-0 text-gray-400 hover:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* CTA */}
+                    <div className="bg-gray-900 rounded-2xl p-6 text-center">
+                        <MessageSquare size={24} className="mx-auto mb-3 text-white" />
+                        <p className="text-white font-medium mb-1">Need help?</p>
+                        <p className="text-gray-400 text-sm mb-4">
+                            Ask your AI Counsellor for personalized strategies.
+                        </p>
+                        <Link
+                            to="/counselor"
+                            className="inline-flex items-center gap-2 w-full justify-center px-4 py-2.5 bg-white text-gray-900 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors"
+                        >
+                            Talk to AI Counsellor <ArrowRight size={16} />
+                        </Link>
                     </div>
                 </div>
-            </main>
+            </div>
         </div>
     )
 }

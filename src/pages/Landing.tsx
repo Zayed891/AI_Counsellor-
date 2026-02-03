@@ -1,130 +1,147 @@
 import { Link } from 'react-router-dom'
-import Navbar from '@/components/Navbar'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ArrowRight, GraduationCap, Search, Brain, Target, Sparkles } from 'lucide-react'
+import { ArrowRight, GraduationCap, Search, Brain, Target, Sparkles, Shield } from 'lucide-react'
 
 export default function Landing() {
     return (
-        <div className="min-h-screen bg-background">
-            <Navbar />
+        <div className="min-h-screen bg-gray-50">
+            {/* Navigation */}
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-6">
+                <div className="max-w-6xl mx-auto py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                            <Shield size={18} className="text-white" />
+                        </div>
+                        <span className="font-bold text-gray-900">DeepcampusAI</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">
+                            Login
+                        </Link>
+                        <Link
+                            to="/signup"
+                            className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+                        >
+                            Get Started
+                        </Link>
+                    </div>
+                </div>
+            </nav>
 
             {/* Hero Section */}
-            <section className="min-h-screen flex items-center pt-20 bg-gradient-dark relative overflow-hidden">
-                {/* Background gradient orbs - Subtle Remoter style */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
+            <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+                {/* Background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50" />
+                <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-indigo-100 rounded-full blur-[100px] opacity-50" />
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-purple-100 rounded-full blur-[100px] opacity-50" />
 
-                <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 py-10 sm:py-20 w-full grid lg:grid-cols-2 gap-10 lg:gap-16 items-center relative z-10">
-                    {/* Left Content */}
-                    <div className="space-y-8 lg:space-y-10">
-                        <Badge variant="secondary" className="animate-pulse-ring border-white/20">
-                            <Sparkles size={14} className="mr-2 text-accent" /> AI-POWERED GUIDANCE
-                        </Badge>
+                <div className="max-w-6xl mx-auto relative z-10">
+                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                        {/* Left Content */}
+                        <div className="space-y-8">
+                            <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 text-sm font-medium rounded-full">
+                                <Sparkles size={14} /> AI-Powered Guidance
+                            </span>
 
-                        <h1 className="text-4xl sm:text-6xl lg:text-8xl font-extrabold leading-tight tracking-tighter">
-                            Land your dream
-                            <br />
-                            <span className="text-muted-foreground/60">university spot</span>
-                        </h1>
+                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                                Land your dream
+                                <br />
+                                <span className="text-gray-400">university spot</span>
+                            </h1>
 
-                        <p className="text-lg sm:text-xl text-muted-foreground/80 max-w-lg leading-relaxed">
-                            Global universities that match your profile. Get real-time
-                            recommendations and be the first one to apply with AI guidance.
-                        </p>
+                            <p className="text-lg text-gray-600 max-w-lg leading-relaxed">
+                                Global universities that match your profile. Get real-time
+                                recommendations and be the first one to apply with AI guidance.
+                            </p>
 
-                        <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
-                            <Button variant="sharp" size="xl" asChild className="h-14 sm:h-16 px-8 sm:px-10 text-lg w-full sm:w-auto">
-                                <Link to="/signup">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Link
+                                    to="/signup"
+                                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gray-900 text-white text-lg font-medium rounded-xl hover:bg-gray-800 transition-colors"
+                                >
                                     Get Started <ArrowRight size={20} />
                                 </Link>
-                            </Button>
-                            <Button variant="sharp-outline" size="xl" asChild className="h-14 sm:h-16 px-8 sm:px-10 text-lg w-full sm:w-auto">
-                                <Link to="/login">I have an account</Link>
-                            </Button>
+                                <Link
+                                    to="/login"
+                                    className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 text-gray-700 text-lg font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                                >
+                                    I have an account
+                                </Link>
+                            </div>
+
+                            <div className="flex flex-wrap gap-6 sm:gap-12 pt-8 border-t border-gray-200">
+                                <div>
+                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">500+</p>
+                                    <p className="text-sm text-gray-500">Universities</p>
+                                </div>
+                                <div>
+                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">50+</p>
+                                    <p className="text-sm text-gray-500">Countries</p>
+                                </div>
+                                <div>
+                                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">AI</p>
+                                    <p className="text-sm text-gray-500">Powered</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-8 sm:gap-16 pt-10 border-t border-white/10">
-                            <div>
-                                <p className="text-3xl sm:text-4xl font-extrabold">500+</p>
-                                <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mt-1">
-                                    Universities
-                                </p>
+                        {/* Right - Floating Cards */}
+                        <div className="hidden lg:flex gap-6 justify-center relative">
+                            <div className="absolute w-[500px] h-[400px] bg-indigo-200 blur-[80px] -z-10 rounded-full opacity-30" />
+
+                            <div className="w-72 p-5 bg-white rounded-2xl border border-gray-200 shadow-xl transform hover:scale-105 transition-transform">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="w-12 h-12 bg-red-600 rounded-xl flex items-center justify-center text-white font-bold text-sm">
+                                        MIT
+                                    </div>
+                                    <span className="px-3 py-1 bg-green-100 text-green-600 text-xs font-medium rounded-lg">
+                                        TARGET
+                                    </span>
+                                </div>
+                                <h4 className="text-lg font-bold text-gray-900 mb-1">MIT</h4>
+                                <p className="text-sm text-gray-500 mb-4">Massachusetts, USA</p>
+                                <div className="flex justify-between text-sm text-gray-400 pt-4 border-t border-gray-100">
+                                    <span>Ranking: #1</span>
+                                    <span>$58,240/yr</span>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-3xl sm:text-4xl font-extrabold">50+</p>
-                                <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mt-1">
-                                    Countries
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-3xl sm:text-4xl font-extrabold">AI</p>
-                                <p className="text-xs font-mono uppercase tracking-widest text-muted-foreground mt-1">
-                                    Powered
-                                </p>
+
+                            <div className="w-72 p-5 bg-white rounded-2xl border border-gray-200 shadow-xl transform translate-y-12 hover:scale-105 transition-transform">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="w-12 h-12 bg-rose-800 rounded-xl flex items-center justify-center text-white font-bold text-xs">
+                                        Stanford
+                                    </div>
+                                    <span className="px-3 py-1 bg-yellow-100 text-yellow-600 text-xs font-medium rounded-lg">
+                                        DREAM
+                                    </span>
+                                </div>
+                                <h4 className="text-lg font-bold text-gray-900 mb-1">Stanford University</h4>
+                                <p className="text-sm text-gray-500 mb-4">California, USA</p>
+                                <div className="flex justify-between text-sm text-gray-400 pt-4 border-t border-gray-100">
+                                    <span>Ranking: #3</span>
+                                    <span>$56,169/yr</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Right - Floating Cards */}
-                    <div className="hidden lg:flex gap-6 justify-center relative">
-                        {/* Abstract decoration */}
-                        <div className="absolute w-[600px] h-[400px] bg-accent/10 blur-[80px] -z-10 rounded-full" />
-
-                        <Card className="w-80 p-6 animate-float bg-[#0A0A0A] border-white/10 backdrop-blur-xl shadow-2xl">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-12 h-12 bg-red-600 flex items-center justify-center text-white font-bold text-sm">
-                                    MIT
-                                </div>
-                                <Badge variant="success" className="px-3">TARGET</Badge>
-                            </div>
-                            <h4 className="text-xl font-bold text-white mb-1">MIT</h4>
-                            <p className="text-sm font-mono text-muted-foreground mb-6">
-                                Massachusetts, USA
-                            </p>
-                            <div className="flex justify-between text-sm text-neutral-400 font-mono pt-4 border-t border-white/5">
-                                <span>RANKING: #1</span>
-                                <span>$58,240/YR</span>
-                            </div>
-                        </Card>
-
-                        <Card className="w-80 p-6 animate-float bg-[#0A0A0A] border-white/10 backdrop-blur-xl shadow-2xl" style={{ animationDelay: '-3s', transform: 'translateY(60px)' }}>
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-12 h-12 bg-rose-800 flex items-center justify-center text-white font-bold text-xs">
-                                    Stanford
-                                </div>
-                                <Badge variant="warning" className="bg-yellow-500 text-black px-3">REACH</Badge>
-                            </div>
-                            <h4 className="text-xl font-bold text-white mb-1">Stanford University</h4>
-                            <p className="text-sm font-mono text-muted-foreground mb-6">
-                                California, USA
-                            </p>
-                            <div className="flex justify-between text-sm text-neutral-400 font-mono pt-4 border-t border-white/5">
-                                <span>RANKING: #3</span>
-                                <span>$56,169/YR</span>
-                            </div>
-                        </Card>
                     </div>
                 </div>
             </section>
 
             {/* Features Section */}
-            <section className="py-16 md:py-32 bg-black border-t border-white/5">
-                <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12">
-                    <div className="mb-20">
-                        <p className="text-sm font-mono uppercase tracking-widest text-accent mb-4">
+            <section className="py-20 px-6 bg-white">
+                <div className="max-w-6xl mx-auto">
+                    <div className="mb-16 text-center">
+                        <span className="text-sm font-medium text-indigo-600 uppercase tracking-wider">
                             How it Works
-                        </p>
-                        <h2 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-white mb-6 tracking-tight">
+                        </span>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-3 mb-4">
                             Your Journey to Success
                         </h2>
-                        <p className="text-xl text-neutral-400 max-w-2xl leading-relaxed">
+                        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                             Four simple steps to find your perfect university match
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
                             {
                                 icon: GraduationCap,
@@ -153,18 +170,18 @@ export default function Landing() {
                         ].map((feature, index) => (
                             <div
                                 key={index}
-                                className="relative p-8 border border-white/10 bg-[#0A0A0A] hover:border-accent/50 transition-colors group h-full"
+                                className="relative p-6 bg-gray-50 rounded-2xl border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors group"
                             >
-                                <span className="absolute top-8 right-8 text-4xl font-bold text-white/5 font-mono">
+                                <span className="absolute top-6 right-6 text-4xl font-bold text-gray-200">
                                     {feature.number}
                                 </span>
-                                <div className="w-16 h-16 bg-neutral-900 border border-white/20 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-                                    <feature.icon size={28} className="text-white" />
+                                <div className="w-14 h-14 bg-white border border-gray-200 rounded-xl flex items-center justify-center mb-6 group-hover:bg-indigo-600 group-hover:border-indigo-600 transition-colors">
+                                    <feature.icon size={24} className="text-gray-600 group-hover:text-white transition-colors" />
                                 </div>
-                                <h4 className="text-xl font-bold text-white mb-4">
+                                <h4 className="text-lg font-bold text-gray-900 mb-2">
                                     {feature.title}
                                 </h4>
-                                <p className="text-neutral-400 leading-relaxed">
+                                <p className="text-gray-600 text-sm leading-relaxed">
                                     {feature.description}
                                 </p>
                             </div>
@@ -174,33 +191,36 @@ export default function Landing() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-40 bg-black relative border-t border-white/5 overflow-hidden">
-                <div className="absolute inset-0 bg-accent/5 blur-[150px] opacity-30" />
+            <section className="py-20 px-6 bg-gray-900 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 blur-[100px]" />
 
-                <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-                    <h2 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold mb-8 tracking-tighter">
+                <div className="max-w-4xl mx-auto text-center relative z-10">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
                         Ready to Start?
                     </h2>
-                    <p className="text-xl text-neutral-400 mb-12 max-w-xl mx-auto leading-relaxed">
+                    <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto">
                         Join thousands of students who found their dream university with AI Counsellor
                     </p>
-                    <Button variant="sharp" size="xl" asChild className="h-14 sm:h-16 px-8 sm:px-12 text-lg w-full sm:w-auto">
-                        <Link to="/signup">
-                            Create Free Account <ArrowRight size={20} />
-                        </Link>
-                    </Button>
+                    <Link
+                        to="/signup"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 text-lg font-medium rounded-xl hover:bg-gray-100 transition-colors"
+                    >
+                        Create Free Account <ArrowRight size={20} />
+                    </Link>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="py-12 border-t border-white/10 bg-black">
-                <div className="max-w-[1400px] mx-auto px-6 sm:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="flex items-center gap-3">
-                        <GraduationCap size={24} className="text-white" />
-                        <span className="font-bold text-lg tracking-tight">AI Counsellor</span>
+            <footer className="py-10 px-6 bg-white border-t border-gray-200">
+                <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                            <Shield size={18} className="text-white" />
+                        </div>
+                        <span className="font-bold text-gray-900">DeepcampusAI</span>
                     </div>
-                    <p className="text-sm font-mono text-neutral-500">
-                        © 2026 AI Counsellor. Built by Jayed Akhtar.
+                    <p className="text-sm text-gray-500">
+                        © 2026 DeepcampusAI. Built by Jayed Akhtar.
                     </p>
                 </div>
             </footer>

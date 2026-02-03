@@ -12,6 +12,8 @@ export interface Profile {
     name: string
     email: string
     phone?: string
+    previous_degree?: string
+    graduation_year?: string
     current_degree?: string
     major?: string
     gpa?: number
