@@ -2,7 +2,7 @@
 
 > Your personalized AI-powered companion for navigating the study abroad journey.
 
-AI Counselor Preview - https://ai-counsellor-k1gm.vercel.app/
+AI Counselor Preview - https://ai-counsellor-9787.vercel.app/dashboard
 
 ## 🚀 Overview
 
