@@ -57,11 +57,11 @@ interface OnboardingData {
 
 const STEPS = [
     { id: 1, title: 'Personal', icon: User, question: "Let's start! What is your full name?" },
-    { id: 2, title: 'Academic', icon: BookOpen, question: "Thanks! What is your latest qualification, major, and graduation year? Also, what degree do you wish to pursue?" },
-    { id: 3, title: 'Test Scores', icon: FileText, question: "Have you taken any exams like IELTS, TOEFL, or GRE? If so, what were your scores?" },
-    { id: 4, title: 'Financial', icon: DollarSign, question: "What is your estimated annual budget range in USD?" },
-    { id: 5, title: 'Preferences', icon: Globe, question: "Which countries are you targeting for your studies?" },
-    { id: 6, title: 'Documents', icon: FileCheck, question: "Finally, do you have your Passport or Transcripts ready?" },
+    { id: 2, title: 'Academic', icon: BookOpen, question: "What is your latest degree and what would you like to study next?" },
+    { id: 3, title: 'Test Scores', icon: FileText, question: "Have you taken IELTS, TOEFL, GRE, or any other exam? Just say the name and score." },
+    { id: 4, title: 'Financial', icon: DollarSign, question: "What's your approximate annual budget in USD for studying abroad?" },
+    { id: 5, title: 'Preferences', icon: Globe, question: "Which country would you like to study in?" },
+    { id: 6, title: 'Documents', icon: FileCheck, question: "Do you have your passport ready? Just say yes or no." },
 ]
 
 const COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Ireland', 'New Zealand', 'Singapore']
