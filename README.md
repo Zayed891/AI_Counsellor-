@@ -16,6 +16,7 @@ Built with **React**, **Vite**, **Express.js**, **Supabase**, and **Google Gemin
   - Interactive chat interface to ask anything about studying abroad.
   - **Smart Action Detection**: Automatically detects intents to add tasks, universities, or lock applications from natural language.
   - **Quick Prompts**: One-click prompts for profile analysis, scholarship search, and university recommendations.
+  - **🔊 Voice Responses**: Text-to-speech powered by ElevenLabs for natural AI voice output.
 
 - **📊 Smart Dashboard**:
   - **Profile Strength Meter**: Visual breakdown of your Academic, Exam, and SOP readiness.
@@ -46,6 +47,7 @@ Built with **React**, **Vite**, **Express.js**, **Supabase**, and **Google Gemin
 ### Backend
 - **Express.js** (Node.js server)
 - **Google Gemini AI** for intelligent responses
+- **ElevenLabs** for text-to-speech voice synthesis
 - **Supabase** for database and authentication
 - **PostgreSQL** (via Supabase)
 
@@ -121,6 +123,9 @@ ai-counsellor/
    # Gemini AI Configuration
    GEMINI_API_KEY=your_gemini_api_key
 
+   # ElevenLabs Text-to-Speech
+   ELEVENLABS_API_KEY=your_elevenlabs_api_key
+
    # Supabase Configuration
    SUPABASE_URL=your_supabase_project_url
    SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
@@ -183,6 +188,7 @@ Make sure to set the appropriate environment variables for your hosting platform
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/ai/chat` | POST | Send chat messages to AI counselor |
+| `/api/ai/speak` | POST | Convert text to speech via ElevenLabs |
 | `/api/shortlist` | GET/POST/DELETE | Manage university shortlist |
 | `/api/tasks` | GET/POST/PUT/DELETE | Manage tasks and to-dos |
 
