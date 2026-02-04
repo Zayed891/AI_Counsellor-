@@ -2,13 +2,13 @@
 
 > Your personalized AI-powered companion for navigating the study abroad journey.
 
-AI Counselor Preview - https://ai-counsellor-9787.vercel.app/dashboard
+**Live Demo**: [AI Counsellor](https://ai-counsellor-9787.vercel.app/)
 
 ## 🚀 Overview
 
 **AI Counselor** is an intelligent web application designed to help students plan their international education journey. It acts as a 24/7 personalized guide, helping you shortlist universities, track application deadlines, manage tasks, and analyze your profile strength.
 
-Built with **React**, **Vite**, **Supabase**, and **AI Models (OpenAI/Claude)** via OpenRouter.
+Built with **React**, **Vite**, **Express.js**, **Supabase**, and **Google Gemini AI**.
 
 ## ✨ Key Features
 
@@ -27,15 +27,51 @@ Built with **React**, **Vite**, **Supabase**, and **AI Models (OpenAI/Claude)** 
   - **Lock Universities**: Finalize your choices to generate specific application tasks.
 
 - **📝 Guidance & Application Tracking**:
-  - **Application Tasks**: dedicated section for tracking submission deadlines, fees, and forms for specific universities.
+  - **Application Tasks**: Dedicated section for tracking submission deadlines, fees, and forms for specific universities.
   - **Document Checklist**: Keep track of passports, transcripts, LORs, and SOPs.
+
+- **🔐 Authentication**:
+  - Secure user authentication via Supabase Auth.
+  - Personalized onboarding flow to capture academic profile.
 
 ## 🛠️ Tech Stack
 
-- **Frontend**: React 19, TypeScript, Vite
-- **Styling**: Tailwind CSS, Lucide React Icons
-- **Backend / Database**: Supabase (Auth & Database)
-- **AI Integration**: OpenRouter API (GPT-4o, Claude 3.5 Sonnet, etc.)
+### Frontend
+- **React 19** with TypeScript
+- **Vite** for fast development and builds
+- **Tailwind CSS v4** for styling
+- **React Router v7** for navigation
+- **Lucide React** for icons
+
+### Backend
+- **Express.js** (Node.js server)
+- **Google Gemini AI** for intelligent responses
+- **Supabase** for database and authentication
+- **PostgreSQL** (via Supabase)
+
+### Deployment
+- **Frontend**: Vercel
+- **Backend**: Vercel Serverless Functions
+
+## 📁 Project Structure
+
+```
+ai-counsellor/
+├── src/                    # Frontend source code
+│   ├── components/         # Reusable UI components
+│   ├── context/            # React context providers
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utility functions & services
+│   ├── pages/              # Page components
+│   └── App.tsx             # Main application component
+├── server/                 # Backend Express server
+│   ├── controllers/        # Route controllers
+│   ├── routes/             # API route definitions
+│   ├── services/           # Business logic & external APIs
+│   └── index.js            # Server entry point
+├── supabase/               # Supabase configuration & migrations
+└── public/                 # Static assets
+```
 
 ## ⚡ Getting Started
 
@@ -43,7 +79,7 @@ Built with **React**, **Vite**, **Supabase**, and **AI Models (OpenAI/Claude)** 
 
 - Node.js (v18+)
 - Supabase Account
-- OpenRouter API Key
+- Google Gemini API Key
 
 ### Installation
 
@@ -53,41 +89,102 @@ Built with **React**, **Vite**, **Supabase**, and **AI Models (OpenAI/Claude)** 
    cd ai-counsellor
    ```
 
-2. **Install dependencies**
+2. **Install Frontend dependencies**
    ```bash
    npm install
    ```
 
-3. **Environment Setup**
-   Create a `.env` file in the root directory:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_OPENROUTER_API_KEY=your_openrouter_api_key
+3. **Install Backend dependencies**
+   ```bash
+   cd server
+   npm install
+   cd ..
    ```
 
-4. **Run Locally**
+4. **Environment Setup**
+
+   Create a `.env` file in the **root** directory:
+   ```env
+   # Supabase Configuration
+   VITE_SUPABASE_URL=your_supabase_project_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+   # Backend API URL
+   VITE_API_URL=http://localhost:8000
+
+   # App URL
+   VITE_SITE_URL=http://localhost:5173
+   ```
+
+   Create a `.env` file in the **server** directory:
+   ```env
+   # Gemini AI Configuration
+   GEMINI_API_KEY=your_gemini_api_key
+
+   # Supabase Configuration
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+   # Server Configuration
+   PORT=8000
+   ```
+
+5. **Run the Development Servers**
+
+   Start the backend server:
+   ```bash
+   cd server
+   npm run dev
+   ```
+
+   In a new terminal, start the frontend:
    ```bash
    npm run dev
    ```
+
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ## 🗄️ Database Schema (Supabase)
 
 The app requires the following tables in Supabase:
 
-- `profiles` (User details, GPA, study level)
-- `shortlist` (Universities added by user)
-- `tasks` (To-do items and application tasks)
-- `chat_messages` (History of AI conversations)
+| Table | Description |
+|-------|-------------|
+| `profiles` | User details, GPA, study level, test scores |
+| `shortlist` | Universities added by user with category (Reach/Target/Safety) |
+| `tasks` | To-do items and application tasks |
+| `chat_messages` | History of AI conversations |
 
 ## 🚀 Deployment
 
-The app is optimized for deployment on **Vercel**.
+### Vercel Deployment
 
 1. Push code to GitHub.
 2. Import project in Vercel.
-3. Add the Environment Variables in Vercel settings.
+3. Add the Environment Variables in Vercel settings:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_API_URL` (your backend URL)
+   - `GEMINI_API_KEY`
 4. Deploy!
+
+### Backend Deployment
+
+The backend can be deployed to:
+- **Vercel Serverless Functions**
+- **Railway**
+- **Render**
+- **Heroku**
+
+Make sure to set the appropriate environment variables for your hosting platform.
+
+## 📝 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/ai/chat` | POST | Send chat messages to AI counselor |
+| `/api/shortlist` | GET/POST/DELETE | Manage university shortlist |
+| `/api/tasks` | GET/POST/PUT/DELETE | Manage tasks and to-dos |
 
 ## 👨‍💻 Author
 
