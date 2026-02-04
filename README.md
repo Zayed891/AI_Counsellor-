@@ -2,7 +2,7 @@
 
 > Your personalized AI-powered companion for navigating the study abroad journey.
 
-**Live Demo**: [AI Counsellor](https://ai-counsellor-9787.vercel.app/)
+AI Counselor Preview - https://ai-counsellor-k1gm.vercel.app/
 
 ## 🚀 Overview
 
@@ -37,43 +37,10 @@ Built with **React**, **Vite**, **Express.js**, **Supabase**, and **Google Gemin
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React 19** with TypeScript
-- **Vite** for fast development and builds
-- **Tailwind CSS v4** for styling
-- **React Router v7** for navigation
-- **Lucide React** for icons
-
-### Backend
-- **Express.js** (Node.js server)
-- **Google Gemini AI** for intelligent responses
-- **ElevenLabs** for text-to-speech voice synthesis
-- **Supabase** for database and authentication
-- **PostgreSQL** (via Supabase)
-
-### Deployment
-- **Frontend**: Vercel
-- **Backend**: Vercel Serverless Functions
-
-## 📁 Project Structure
-
-```
-ai-counsellor/
-├── src/                    # Frontend source code
-│   ├── components/         # Reusable UI components
-│   ├── context/            # React context providers
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Utility functions & services
-│   ├── pages/              # Page components
-│   └── App.tsx             # Main application component
-├── server/                 # Backend Express server
-│   ├── controllers/        # Route controllers
-│   ├── routes/             # API route definitions
-│   ├── services/           # Business logic & external APIs
-│   └── index.js            # Server entry point
-├── supabase/               # Supabase configuration & migrations
-└── public/                 # Static assets
-```
+- **Frontend**: React 19, TypeScript, Vite
+- **Styling**: Tailwind CSS, Lucide React Icons
+- **Backend / Database**: Supabase (Auth & Database)
+- **AI Integration**: OpenRouter API (GPT-4o, Claude 3.5 Sonnet, etc.)
 
 ## ⚡ Getting Started
 
@@ -110,39 +77,10 @@ ai-counsellor/
    # Supabase Configuration
    VITE_SUPABASE_URL=your_supabase_project_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-   # Backend API URL
-   VITE_API_URL=http://localhost:8000
-
-   # App URL
-   VITE_SITE_URL=http://localhost:5173
+   VITE_OPENROUTER_API_KEY=your_openrouter_api_key
    ```
 
-   Create a `.env` file in the **server** directory:
-   ```env
-   # Gemini AI Configuration
-   GEMINI_API_KEY=your_gemini_api_key
-
-   # ElevenLabs Text-to-Speech
-   ELEVENLABS_API_KEY=your_elevenlabs_api_key
-
-   # Supabase Configuration
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-   # Server Configuration
-   PORT=8000
-   ```
-
-5. **Run the Development Servers**
-
-   Start the backend server:
-   ```bash
-   cd server
-   npm run dev
-   ```
-
-   In a new terminal, start the frontend:
+4. **Run Locally**
    ```bash
    npm run dev
    ```
@@ -172,25 +110,6 @@ The app requires the following tables in Supabase:
    - `VITE_API_URL` (your backend URL)
    - `GEMINI_API_KEY`
 4. Deploy!
-
-### Backend Deployment
-
-The backend can be deployed to:
-- **Vercel Serverless Functions**
-- **Railway**
-- **Render**
-- **Heroku**
-
-Make sure to set the appropriate environment variables for your hosting platform.
-
-## 📝 API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/ai/chat` | POST | Send chat messages to AI counselor |
-| `/api/ai/speak` | POST | Convert text to speech via ElevenLabs |
-| `/api/shortlist` | GET/POST/DELETE | Manage university shortlist |
-| `/api/tasks` | GET/POST/PUT/DELETE | Manage tasks and to-dos |
 
 ## 👨‍💻 Author
 
