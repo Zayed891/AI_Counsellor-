@@ -23,7 +23,8 @@ import {
     FileCheck,
     Sparkles,
     Volume2,
-    StopCircle
+    StopCircle,
+    X
 } from 'lucide-react'
 
 // ... Keep Interfaces same ...
@@ -95,13 +96,23 @@ export default function Onboarding() {
     const [isSpeakingElevenLabs, setIsSpeakingElevenLabs] = useState(false)
     const hasSpokenRef = useRef(false)
 
+    // Auto-dismiss error notification after 5 seconds
+    useEffect(() => {
+        if (lastError) {
+            const timer = setTimeout(() => {
+                setLastError(null)
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [lastError])
+
     const speak = async (text: string) => {
         setIsSpeakingElevenLabs(true)
         try {
             await speakWithElevenLabs(text, { voiceId: ELEVENLABS_DEFAULT_VOICE })
         } catch (e: any) {
             console.error("ElevenLabs TTS failed", e)
-            setLastError(`Voice Error: ${e.message || 'Check API Key'}`)
+            setLastError('Using basic voice (ElevenLabs credits exhausted)')
             // Fallback to web speech
             webSpeak(text)
         } finally {
@@ -597,9 +608,17 @@ export default function Onboarding() {
                                 }
                             </h2>
                             {lastError && (
-                                <div className="text-destructive bg-destructive/10 p-4 rounded-xl border border-destructive/20 mb-4">
-                                    <p className="font-mono text-xs mb-1">ERROR</p>
-                                    {lastError}
+                                <div className="flex items-center justify-between bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-xl text-sm animate-in fade-in slide-in-from-bottom-2 duration-300 mb-4">
+                                    <span className="flex items-center gap-2">
+                                        ⚠️ {lastError}
+                                    </span>
+                                    <button
+                                        onClick={() => setLastError(null)}
+                                        className="p-1 hover:bg-amber-100 rounded-full transition-colors"
+                                        aria-label="Dismiss warning"
+                                    >
+                                        <X size={16} />
+                                    </button>
                                 </div>
                             )}
                             {aiProcessing && (

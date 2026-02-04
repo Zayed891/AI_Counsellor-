@@ -75,16 +75,28 @@ export default function Counselor() {
 
     const [voiceMode, setVoiceMode] = useState(false)
     const [autoSpeak, setAutoSpeak] = useState(true) // Auto-speak AI responses with ElevenLabs
-    const [elevenLabsKey] = useState(import.meta.env.VITE_ELEVENLABS_API_KEY)
+    const [voiceWarning, setVoiceWarning] = useState<string | null>(null)
 
-    // ElevenLabs Wrapper
+    // Auto-dismiss voice warning after 5 seconds
+    useEffect(() => {
+        if (voiceWarning) {
+            const timer = setTimeout(() => {
+                setVoiceWarning(null)
+            }, 5000)
+            return () => clearTimeout(timer)
+        }
+    }, [voiceWarning])
+
+    // ElevenLabs Wrapper with fallback
     const speak = async (text: string) => {
-        if (elevenLabsKey) {
-            try {
-                await speakWithElevenLabs(text, { voiceId: ELEVENLABS_DEFAULT_VOICE })
-            } catch (e) {
-                console.error("ElevenLabs TTS failed", e)
-            }
+        try {
+            await speakWithElevenLabs(text, { voiceId: ELEVENLABS_DEFAULT_VOICE })
+            setVoiceWarning(null) // Clear warning on success
+        } catch (e) {
+            console.error("ElevenLabs TTS failed", e)
+            setVoiceWarning('Using basic voice (ElevenLabs credits exhausted)')
+            // Fallback to web speech
+            webSpeak(text)
         }
     }
 
@@ -576,17 +588,19 @@ export default function Counselor() {
 
                                 {/* Voice Status */}
                                 {(isSpeaking || isListening) && hasSupport && (
-                                    <div className="flex items-center justify-end mt-2 gap-3 text-xs">
-                                        {isSpeaking && (
-                                            <span className="flex items-center gap-1.5 text-green-600">
-                                                <Volume2 size={12} /> Speaking...
-                                            </span>
-                                        )}
-                                        {isListening && (
-                                            <span className="flex items-center gap-1.5 text-red-500 animate-pulse">
-                                                <Mic size={12} /> Listening...
-                                            </span>
-                                        )}
+                                    <div className="flex items-center justify-between mt-2 text-xs">
+                                        <div className="flex items-center gap-3">
+                                            {isSpeaking && (
+                                                <span className="flex items-center gap-1.5 text-green-600">
+                                                    <Volume2 size={12} /> Speaking...
+                                                </span>
+                                            )}
+                                            {isListening && (
+                                                <span className="flex items-center gap-1.5 text-red-500 animate-pulse">
+                                                    <Mic size={12} /> Listening...
+                                                </span>
+                                            )}
+                                        </div>
                                         {isSpeaking && (
                                             <button
                                                 onClick={stopSpeaking}
@@ -595,6 +609,22 @@ export default function Counselor() {
                                                 <StopCircle size={12} /> Stop
                                             </button>
                                         )}
+                                    </div>
+                                )}
+
+                                {/* Voice Warning Notification */}
+                                {voiceWarning && (
+                                    <div className="mt-3 flex items-center justify-between bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-lg text-xs animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                        <span className="flex items-center gap-2">
+                                            ⚠️ {voiceWarning}
+                                        </span>
+                                        <button
+                                            onClick={() => setVoiceWarning(null)}
+                                            className="p-1 hover:bg-amber-100 rounded-full transition-colors"
+                                            aria-label="Dismiss warning"
+                                        >
+                                            <X size={14} />
+                                        </button>
                                     </div>
                                 )}
                             </div>
