@@ -24,7 +24,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
 
     const handleSignOut = async () => {
         await signOut()
-        navigate('/')
+        window.location.replace('/')
     }
 
     const isActive = (path: string) => location.pathname === path
@@ -35,6 +35,7 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
         { path: '/shortlist', label: 'Shortlist' },
         { path: '/guidance', label: 'Guidance' },
         { path: '/counselor', label: 'AI Counselor' },
+        { path: '/pricing', label: 'Pricing' },
     ]
 
     return (
@@ -77,6 +78,12 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                             </>
                         ) : (
                             <>
+                                <Link
+                                    to="/pricing"
+                                    className="text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    Pricing
+                                </Link>
                                 <Link
                                     to="/login"
                                     className="text-sm font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
@@ -125,6 +132,13 @@ export default function Navbar({ variant = 'dark' }: NavbarProps) {
                             </>
                         ) : (
                             <>
+                                <Link
+                                    to="/pricing"
+                                    className="text-sm font-mono uppercase tracking-wider text-muted-foreground py-2"
+                                    onClick={() => setMobileMenuOpen(false)}
+                                >
+                                    Pricing
+                                </Link>
                                 <Link
                                     to="/login"
                                     className="text-sm font-mono uppercase tracking-wider text-muted-foreground py-2"

@@ -23,7 +23,7 @@ export default function DashboardLayout() {
 
     const handleSignOut = async () => {
         await signOut()
-        navigate('/')
+        window.location.replace('/')
     }
 
     const navLinks = [
@@ -51,7 +51,7 @@ export default function DashboardLayout() {
                                 <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </div>
-                        <span className="font-bold text-lg text-gray-900 tracking-tight">DeepcampusAI</span>
+                        <span className="font-bold text-lg text-gray-900 tracking-tight">AI Counsellor</span>
                     </div>
 
                     {/* Navigation */}
@@ -104,7 +104,7 @@ export default function DashboardLayout() {
                                         <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
-                                <span className="font-bold text-lg text-gray-900">DeepcampusAI</span>
+                                <span className="font-bold text-lg text-gray-900">AI Counsellor</span>
                             </div>
                             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)} className="text-gray-500">
                                 <X size={20} />
@@ -148,7 +148,7 @@ export default function DashboardLayout() {
                             <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600">
                                 <Menu size={20} />
                             </Button>
-                            <span className="font-bold text-gray-900">DeepcampusAI</span>
+                            <span className="font-bold text-gray-900">AI Counsellor</span>
                         </div>
                     </header>
 

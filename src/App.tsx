@@ -4,6 +4,7 @@ import { UserProvider } from '@/context/UserContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import DashboardLayout from '@/components/Layout/DashboardLayout'
 import Landing from '@/pages/Landing'
+import Pricing from '@/pages/Pricing'
 import Login from '@/pages/Login'
 import Signup from '@/pages/Signup'
 import Onboarding from '@/pages/Onboarding'
@@ -21,6 +22,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<Landing />} />
+            <Route path="/pricing" element={<Pricing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 

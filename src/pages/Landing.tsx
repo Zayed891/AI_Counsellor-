@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, GraduationCap, Search, Brain, Target, Sparkles, Shield } from 'lucide-react'
+import { ArrowRight, GraduationCap, Search, Brain, Target, Sparkles, Shield, Check } from 'lucide-react'
 
 export default function Landing() {
     return (
@@ -11,7 +11,7 @@ export default function Landing() {
                         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                             <Shield size={18} className="text-white" />
                         </div>
-                        <span className="font-bold text-gray-900">DeepcampusAI</span>
+                        <span className="font-bold text-gray-900">AI Counsellor</span>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 font-medium">
@@ -190,6 +190,106 @@ export default function Landing() {
                 </div>
             </section>
 
+            {/* Pricing Section */}
+            <section className="py-20 px-6 bg-gray-50 border-t border-gray-200">
+                <div className="max-w-6xl mx-auto">
+                    <div className="text-center mb-16">
+                        <span className="text-sm font-medium text-indigo-600 uppercase tracking-wider">
+                            Pricing
+                        </span>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-3 mb-4">
+                            Invest in your Future
+                        </h2>
+                        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                            Choose the plan that fits your goals. Start for free, upgrade for power.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        {/* Free Tier */}
+                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-lg transition-shadow">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Explorer</h3>
+                            <div className="mb-6">
+                                <span className="text-4xl font-bold text-gray-900">$0</span>
+                                <span className="text-gray-500">/forever</span>
+                            </div>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-gray-600 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-600 shrink-0" /> 5 AI Chats / day
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-600 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-600 shrink-0" /> Basic Search
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-600 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-600 shrink-0" /> 1 Shortlist
+                                </li>
+                            </ul>
+                            <Link to="/signup" className="block w-full py-3 text-center bg-gray-100 text-gray-900 font-medium rounded-xl hover:bg-gray-200 transition-colors">
+                                Get Started Free
+                            </Link>
+                        </div>
+
+                        {/* Pro Tier */}
+                        <div className="bg-gray-900 rounded-2xl p-8 shadow-xl relative transform md:-translate-y-4">
+                            <div className="absolute top-0 center-0 transform -translate-y-1/2 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                                Most Popular
+                            </div>
+                            <h3 className="text-xl font-bold text-white mb-2">Pro Student</h3>
+                            <div className="mb-6">
+                                <span className="text-4xl font-bold text-white">$19</span>
+                                <span className="text-gray-400">/month</span>
+                            </div>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-400 shrink-0" /> Unlimited AI Chats
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-400 shrink-0" /> SOP Analysis
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-400 shrink-0" /> Voice Mode
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-300 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-400 shrink-0" /> Unlimited Shortlists
+                                </li>
+                            </ul>
+                            <Link to="/signup" className="block w-full py-3 text-center bg-indigo-600 text-white font-medium rounded-xl hover:bg-indigo-500 transition-colors shadow-lg shadow-indigo-600/25">
+                                Start Free Trial
+                            </Link>
+                        </div>
+
+                        {/* Premium Tier */}
+                        <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-200 hover:shadow-lg transition-shadow">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Guidance</h3>
+                            <div className="mb-6">
+                                <span className="text-4xl font-bold text-gray-900">$199</span>
+                                <span className="text-gray-500">/one-time</span>
+                            </div>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-gray-600 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-600 shrink-0" /> Everything in Pro
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-600 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-600 shrink-0" /> Human Planner Call
+                                </li>
+                                <li className="flex items-center gap-3 text-gray-600 text-sm">
+                                    <Check className="w-5 h-5 text-indigo-600 shrink-0" /> Visa Mock Interview
+                                </li>
+                            </ul>
+                            <Link to="/pricing" className="block w-full py-3 text-center border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors">
+                                View Details
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="mt-12 text-center">
+                        <Link to="/pricing" className="text-indigo-600 font-medium hover:text-indigo-800 flex items-center justify-center gap-2">
+                            See full pricing comparison <ArrowRight size={16} />
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
             {/* CTA Section */}
             <section className="py-20 px-6 bg-gray-900 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 blur-[100px]" />
@@ -217,10 +317,10 @@ export default function Landing() {
                         <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
                             <Shield size={18} className="text-white" />
                         </div>
-                        <span className="font-bold text-gray-900">DeepcampusAI</span>
+                        <span className="font-bold text-gray-900">AI Counsellor</span>
                     </div>
                     <p className="text-sm text-gray-500">
-                        © 2026 DeepcampusAI. Built by Jayed Akhtar.
+                        © 2026 AI Counsellor. Built by Jayed Akhtar.
                     </p>
                 </div>
             </footer>
