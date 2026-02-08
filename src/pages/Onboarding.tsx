@@ -58,11 +58,11 @@ interface OnboardingData {
 
 const STEPS = [
     { id: 1, title: 'Personal', icon: User, question: "Let's start! What is your full name?" },
-    { id: 2, title: 'Academic', icon: BookOpen, question: "What is your latest degree and what would you like to study next?" },
+    { id: 2, title: 'Academic', icon: BookOpen, question: "What is your highest completed degree? For example, Bachelor's, Master's, or BTech." },
     { id: 3, title: 'Test Scores', icon: FileText, question: "Have you taken IELTS, TOEFL, GRE, or any other exam? Just say the name and score." },
     { id: 4, title: 'Financial', icon: DollarSign, question: "What's your approximate annual budget in USD for studying abroad?" },
-    { id: 5, title: 'Preferences', icon: Globe, question: "Which country would you like to study in?" },
-    { id: 6, title: 'Documents', icon: FileCheck, question: "Do you have your passport ready? Just say yes or no." },
+    { id: 5, title: 'Preferences', icon: Globe, question: "Which countries would you like to study in? You can mention multiple countries." },
+    { id: 6, title: 'Documents', icon: FileCheck, question: "Do you have your passport ready? Say yes or no." },
 ]
 
 const COUNTRIES = ['United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Netherlands', 'Ireland', 'New Zealand', 'Singapore']
@@ -161,11 +161,29 @@ export default function Onboarding() {
                 if (step) {
                     hasSpokenRef.current = true
                     let questionToAsk = step.question
+                    
+                    // Personal info substeps
                     if (currentStep === 1) {
                         if (subStep === 0) questionToAsk = "Let's start! What is your full name?"
                         else if (subStep === 1) questionToAsk = "Great! And what is your email address?"
                         else if (subStep === 2) questionToAsk = "Finally for this section, what is your phone number?"
                     }
+                    
+                    // Academic substeps
+                    if (currentStep === 2) {
+                        if (subStep === 0) questionToAsk = "What is your highest completed degree? For example, Bachelor's, Master's, or BTech."
+                        else if (subStep === 1) questionToAsk = "What degree do you want to pursue next, and in which field? For example, Master's in Computer Science."
+                    }
+                    
+                    // Documents substeps
+                    if (currentStep === 6) {
+                        if (subStep === 0) questionToAsk = "Do you have your passport ready? Say yes or no."
+                        else if (subStep === 1) questionToAsk = "Do you have your academic transcripts? Say yes or no."
+                        else if (subStep === 2) questionToAsk = "Do you have your Statement of Purpose? Say yes or no."
+                        else if (subStep === 3) questionToAsk = "Do you have your Letters of Recommendation? Say yes or no."
+                    }
+                    
+                    console.log(`🎤 ASKING QUESTION - Step ${currentStep}, SubStep ${subStep}:`, questionToAsk)
                     speak(questionToAsk)
                 }
             }, 500)
@@ -192,15 +210,193 @@ export default function Onboarding() {
             else if (subStep === 1) targetFields = ['email']
             else if (subStep === 2) targetFields = ['phone']
         }
+        
+        if (currentStep === 2) {
+            if (subStep === 0) targetFields = ['previousDegree']
+            else if (subStep === 1) targetFields = ['currentDegree', 'major']
+        }
+        
+        if (currentStep === 6) {
+            if (subStep === 0) targetFields = ['hasPassport']
+            else if (subStep === 1) targetFields = ['hasTranscript']
+            else if (subStep === 2) targetFields = ['hasSop']
+            else if (subStep === 3) targetFields = ['hasLor']
+        }
+
+        // For boolean fields (documents), try direct inference first to avoid API calls
+        if (targetFields.length === 1 && targetFields[0].startsWith('has')) {
+            const field = targetFields[0]
+            const lowerTranscript = transcript.toLowerCase().trim()
+            
+            console.log(`🎯 Direct boolean inference for ${field}`)
+            
+            // Check for positive words
+            const positiveWords = ['yes', 'yeah', 'yep', 'yup', 'ready', 'have', 'got', 'sure']
+            const hasPositive = positiveWords.some(word => lowerTranscript === word || lowerTranscript.includes(word))
+            
+            // Check for negative words
+            const negativeWords = ['no', 'nope', 'nah', 'not']
+            const hasNegative = negativeWords.some(word => lowerTranscript === word || lowerTranscript.includes(word))
+            
+            if (hasPositive && !hasNegative) {
+                console.log(`✅ Direct inference: ${field} = true`)
+                updateField(field as keyof OnboardingData, true)
+                speak("Got it!")
+                
+                if (isInterviewMode) {
+                    setTimeout(() => {
+                        if (currentStep === 6) {
+                            subStep < 3 ? setSubStep(prev => prev + 1) : handleNext()
+                        } else {
+                            handleNext()
+                        }
+                    }, 1000)
+                }
+                
+                setAiProcessing(false)
+                resetTranscript()
+                return
+            } else if (hasNegative) {
+                console.log(`✅ Direct inference: ${field} = false`)
+                updateField(field as keyof OnboardingData, false)
+                speak("Got it!")
+                
+                if (isInterviewMode) {
+                    setTimeout(() => {
+                        if (currentStep === 6) {
+                            subStep < 3 ? setSubStep(prev => prev + 1) : handleNext()
+                        } else {
+                            handleNext()
+                        }
+                    }, 1000)
+                }
+                
+                setAiProcessing(false)
+                resetTranscript()
+                return
+            }
+        }
 
         try {
-            const prompt = `
-                        You are a strict data extraction assistant.
-                        TASK: Extract specific data fields from the user's spoken input into a JSON object.
-                        CONTEXT: Step ${currentStep} (${STEPS[currentStep - 1].title}).
-                        INPUT: "${transcript}"
-                        TARGET FIELDS: ${targetFields.join(', ')}
-                        Return ONLY valid JSON.`
+            // Build detailed instructions for boolean fields
+            const booleanFieldsInstructions = targetFields.filter(f => f.startsWith('has')).length > 0
+                ? `\n\nIMPORTANT FOR BOOLEAN FIELDS (hasPassport, hasTranscript, hasSop, hasLor):
+CRITICAL: Listen for ANY positive or negative response and convert appropriately.
+
+POSITIVE responses (set to true):
+- "yes", "yeah", "yep", "yup", "sure", "correct"
+- "ready", "have it", "got it", "I have", "I have it"
+- "done", "prepared", "available", "complete"
+- "already have", "already got"
+
+NEGATIVE responses (set to false):
+- "no", "nope", "nah", "not yet", "not really"
+- "not ready", "don't have", "haven't", "haven't got"
+- "need to get", "working on it", "in progress"
+- "don't have it", "not available", "not prepared"
+
+THESE MUST BE ACTUAL BOOLEAN VALUES (true/false), NOT STRINGS.
+
+EXAMPLES:
+User says: "yes" → {"hasPassport": true}
+User says: "ready" → {"hasPassport": true}
+User says: "I have it" → {"hasPassport": true}
+User says: "no" → {"hasPassport": false}
+User says: "not yet" → {"hasPassport": false}
+User says: "not ready" → {"hasPassport": false}`
+                : '';
+
+            // Special instructions for array fields
+            const arrayFieldsInstructions = targetFields.includes('targetCountries')
+                ? `\n\nIMPORTANT FOR targetCountries (ARRAY FIELD):
+- Extract ALL countries mentioned by the user
+- Return as an array of strings: ["United States", "United Kingdom", "Canada"]
+- Common variations: "US" or "USA" → "United States", "UK" → "United Kingdom"
+- If user lists multiple countries, include ALL of them in the array`
+                : '';
+
+            // Field name clarifications
+            let fieldClarifications = '';
+            if (currentStep === 2) {
+                if (subStep === 0) {
+                    fieldClarifications = `\n\nFIELD CLARIFICATIONS FOR STEP 2 - SUBSTEP 0:
+- previousDegree: The degree the user ALREADY COMPLETED (normalize to standard form)
+  Examples: "BTech"/"B.Tech"/"Bachelor of Technology" → "Bachelor's"
+            "BE"/"B.E." → "Bachelor's"
+            "B.Sc"/"BSc" → "Bachelor's"
+            "BA"/"B.A." → "Bachelor's"
+            "M.Sc"/"MSc" → "Master's"
+            "MBA" → "MBA"
+
+EXAMPLE:
+User says: "I have a BTech degree"
+Response: {"previousDegree": "Bachelor's"}
+
+User says: "Bachelor's"
+Response: {"previousDegree": "Bachelor's"}`;
+                } else if (subStep === 1) {
+                    fieldClarifications = `\n\nFIELD CLARIFICATIONS FOR STEP 2 - SUBSTEP 1:
+- currentDegree: The degree the user WANTS TO PURSUE (normalize to standard form)
+  Examples: "MS"/"M.S."/"MSc"/"Masters" → "Master's"
+            "MBA" → "MBA" (keep as is)
+            "PhD"/"Ph.D"/"Doctorate" → "PhD"
+            "Bachelors" → "Bachelor's"
+- major: The field of study for the degree they want to pursue (FULL NAME)
+  Examples: "CS" → "Computer Science"
+            "ECE" → "Electronics and Communication Engineering"
+            "EE" → "Electrical Engineering"
+            "IT" → "Information Technology"
+
+EXAMPLES:
+User says: "I want to do MS in Computer Science"
+Response: {"currentDegree": "Master's", "major": "Computer Science"}
+
+User says: "Masters in CS"
+Response: {"currentDegree": "Master's", "major": "Computer Science"}
+
+User says: "MBA in Finance"
+Response: {"currentDegree": "MBA", "major": "Finance"}`;
+                }
+            }
+
+            const prompt = `You are a strict data extraction assistant.
+TASK: Extract specific data fields from the user's spoken input into a JSON object.
+
+CONTEXT: Step ${currentStep} - ${STEPS[currentStep - 1].title}
+USER INPUT: "${transcript}"
+TARGET FIELDS TO EXTRACT: ${targetFields.join(', ')}${booleanFieldsInstructions}${arrayFieldsInstructions}${fieldClarifications}
+
+INSTRUCTIONS:
+1. Extract ONLY the fields listed in TARGET FIELDS
+2. For boolean fields (starting with 'has'), return true or false (not strings)
+3. For array fields (like targetCountries), return an array of all mentioned values
+4. For numeric fields (scores, years, budgets), extract numbers only
+5. For text fields, extract the actual value mentioned
+6. If a field is not mentioned, omit it from the response
+7. Return ONLY valid JSON, no explanations
+
+EXAMPLES:
+
+Boolean example:
+User says: "yes I have my passport ready"
+Response: {"hasPassport": true}
+
+User says: "no not yet"
+Response: {"hasPassport": false}
+
+Array example:
+User says: "I want to study in US, UK and Canada"
+Response: {"targetCountries": ["United States", "United Kingdom", "Canada"]}
+
+Degree examples:
+User says: "BTech"
+Response: {"previousDegree": "Bachelor's"}
+
+User says: "I want to do Master's in Computer Science"
+Response: {"currentDegree": "Master's", "major": "Computer Science"}
+
+User says: "MS in CS"
+Response: {"currentDegree": "Master's", "major": "Computer Science"}`
 
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/ai/extract`, {
                 method: 'POST',
@@ -211,23 +407,185 @@ export default function Onboarding() {
             if (!response.ok) throw new Error('Failed to extract data')
             const responseData = await response.json()
             const content = responseData.text
+            
+            console.log('AI Response:', content)
+            
             const jsonMatch = content.match(/\{[\s\S]*\}/)
-            if (!jsonMatch) throw new Error("No JSON found in response")
+            if (!jsonMatch) {
+                console.error('No JSON found in AI response')
+                throw new Error("No JSON found in response")
+            }
 
             const extractedData = JSON.parse(jsonMatch[0])
+            
+            // Debug logging
+            console.log('========== VOICE EXTRACTION DEBUG ==========')
+            console.log('Step:', currentStep, '-', STEPS[currentStep - 1].title)
+            console.log('Target fields:', targetFields)
+            console.log('Voice transcript:', transcript)
+            console.log('AI extracted:', extractedData)
+            console.log('============================================')
 
+            let fieldsUpdated = 0
             Object.keys(extractedData).forEach(key => {
                 if (targetFields.includes(key)) {
-                    updateField(key as keyof OnboardingData, extractedData[key])
+                    let value = extractedData[key]
+                    
+                    // Skip empty or undefined values
+                    if (value === undefined || value === null || value === '') {
+                        console.log(`Skipping ${key}: empty value`)
+                        return
+                    }
+                    
+                    // Special handling for boolean fields to ensure proper type
+                    if (key.startsWith('has')) {
+                        // Convert string responses to actual boolean if needed
+                        if (typeof value === 'string') {
+                            const lowerValue = value.toLowerCase().trim()
+                            
+                            // Positive responses
+                            const positiveWords = ['true', 'yes', 'yeah', 'yep', 'yup', 'ready', 'have', 'got', 'done', 'prepared', 'available', 'complete', 'sure', 'correct']
+                            const isPositive = positiveWords.some(word => lowerValue.includes(word))
+                            
+                            // Negative responses
+                            const negativeWords = ['false', 'no', 'nope', 'nah', 'not', "don't", "haven't", 'need to get']
+                            const isNegative = negativeWords.some(word => lowerValue.includes(word))
+                            
+                            if (isPositive && !isNegative) {
+                                value = true
+                            } else if (isNegative) {
+                                value = false
+                            } else {
+                                // Default to true if the AI extracted something for this field
+                                value = true
+                            }
+                            
+                            console.log(`Converted ${key} from "${extractedData[key]}" to boolean:`, value)
+                        } else {
+                            // Ensure it's a boolean
+                            value = Boolean(value)
+                            console.log(`Converted ${key} to boolean:`, value)
+                        }
+                    }
+                    
+                    // Special handling for degree fields - normalize variations
+                    if (key === 'previousDegree' || key === 'currentDegree') {
+                        if (typeof value === 'string') {
+                            const degreeNormalization: Record<string, string> = {
+                                'btech': "Bachelor's",
+                                'b.tech': "Bachelor's",
+                                'bachelor of technology': "Bachelor's",
+                                'be': "Bachelor's",
+                                'b.e.': "Bachelor's",
+                                'bsc': "Bachelor's",
+                                'b.sc': "Bachelor's",
+                                'ba': "Bachelor's",
+                                'b.a.': "Bachelor's",
+                                'bachelors': "Bachelor's",
+                                'bachelor': "Bachelor's",
+                                'msc': "Master's",
+                                'm.sc': "Master's",
+                                'ms': "Master's",
+                                'm.s.': "Master's",
+                                'masters': "Master's",
+                                'master': "Master's",
+                                'mba': 'MBA',
+                                'phd': 'PhD',
+                                'ph.d': 'PhD',
+                                'ph.d.': 'PhD',
+                                'doctorate': 'PhD',
+                            }
+                            
+                            const normalized = degreeNormalization[value.toLowerCase().trim()]
+                            if (normalized) {
+                                value = normalized
+                                console.log(`Normalized ${key} from "${extractedData[key]}" to "${value}"`)
+                            }
+                        }
+                    }
+                    
+                    // Special handling for major field - expand abbreviations
+                    if (key === 'major') {
+                        if (typeof value === 'string') {
+                            const majorExpansion: Record<string, string> = {
+                                'cs': 'Computer Science',
+                                'ece': 'Electronics and Communication Engineering',
+                                'ee': 'Electrical Engineering',
+                                'me': 'Mechanical Engineering',
+                                'ce': 'Civil Engineering',
+                                'it': 'Information Technology',
+                                'eee': 'Electrical and Electronics Engineering',
+                            }
+                            
+                            const expanded = majorExpansion[value.toLowerCase().trim()]
+                            if (expanded) {
+                                value = expanded
+                                console.log(`Expanded ${key} from "${extractedData[key]}" to "${value}"`)
+                            }
+                        }
+                    }
+                    
+                    // Special handling for array fields
+                    if (key === 'targetCountries') {
+                        // Ensure it's an array
+                        if (typeof value === 'string') {
+                            // If AI returned a string, split by comma
+                            value = value.split(',').map((s: string) => s.trim())
+                        } else if (!Array.isArray(value)) {
+                            // If it's a single value, wrap in array
+                            value = [value]
+                        }
+                        
+                        // Normalize country names
+                        const countryMap: Record<string, string> = {
+                            'US': 'United States',
+                            'USA': 'United States',
+                            'UK': 'United Kingdom',
+                            'UAE': 'United Arab Emirates',
+                            'NZ': 'New Zealand',
+                        }
+                        
+                        value = (value as string[]).map((country: string) => {
+                            const normalized = countryMap[country.toUpperCase()] || country
+                            // Match against COUNTRIES list for exact match
+                            const exactMatch = COUNTRIES.find(c => 
+                                c.toLowerCase() === normalized.toLowerCase()
+                            )
+                            return exactMatch || normalized
+                        })
+                        
+                        console.log(`Converted ${key} to array:`, value)
+                    }
+                    
+                    updateField(key as keyof OnboardingData, value)
+                    fieldsUpdated++
                 }
             })
 
-            speak("Got it!")
+            console.log(`Updated ${fieldsUpdated} field(s)`)
+
+            if (fieldsUpdated > 0) {
+                speak("Got it!")
+            } else {
+                console.warn(`⚠️ No fields were extracted by AI`)
+                console.warn(`Transcript: "${transcript}"`)
+                console.warn(`Expected fields:`, targetFields)
+                console.warn(`AI extracted:`, extractedData)
+                
+                speak("I didn't catch that completely. Could you please repeat?")
+                resetTranscript()
+                setAiProcessing(false)
+                return
+            }
 
             if (isInterviewMode) {
                 setTimeout(() => {
                     if (currentStep === 1) {
                         subStep < 2 ? setSubStep(prev => prev + 1) : handleNext()
+                    } else if (currentStep === 2) {
+                        subStep < 1 ? setSubStep(prev => prev + 1) : handleNext()
+                    } else if (currentStep === 6) {
+                        subStep < 3 ? setSubStep(prev => prev + 1) : handleNext()
                     } else {
                         handleNext()
                     }
@@ -235,9 +593,78 @@ export default function Onboarding() {
             }
 
         } catch (error: any) {
-            setLastError(`Voice Error: ${error.message || 'Check API Key'}`)
-            speak("Sorry, I couldn't understand that completely. Please try again.")
-        } finally {
+            console.error('❌ Voice processing error:', error)
+            console.error('Transcript was:', transcript)
+            console.error('Target fields were:', targetFields)
+            
+            // If API fails for boolean fields, use direct inference as fallback
+            if (targetFields.length === 1 && targetFields[0].startsWith('has')) {
+                const field = targetFields[0]
+                const lowerTranscript = transcript.toLowerCase().trim()
+                
+                console.log(`⚠️ API failed, trying direct inference for ${field}`)
+                
+                // Check for positive/negative words
+                const positiveWords = ['yes', 'yeah', 'yep', 'yup', 'ready', 'have', 'got', 'sure']
+                const hasPositive = positiveWords.some(word => lowerTranscript === word || lowerTranscript.includes(word))
+                
+                const negativeWords = ['no', 'nope', 'nah', 'not']
+                const hasNegative = negativeWords.some(word => lowerTranscript === word || lowerTranscript.includes(word))
+                
+                if (hasPositive && !hasNegative) {
+                    console.log(`✅ Fallback success: ${field} = true`)
+                    updateField(field as keyof OnboardingData, true)
+                    try {
+                        speak("Got it!")
+                    } catch {
+                        console.log('Speech failed, continuing anyway')
+                    }
+                    
+                    if (isInterviewMode) {
+                        setTimeout(() => {
+                            if (currentStep === 6) {
+                                subStep < 3 ? setSubStep(prev => prev + 1) : handleNext()
+                            } else {
+                                handleNext()
+                            }
+                        }, 1000)
+                    }
+                    
+                    setAiProcessing(false)
+                    resetTranscript()
+                    return
+                } else if (hasNegative) {
+                    console.log(`✅ Fallback success: ${field} = false`)
+                    updateField(field as keyof OnboardingData, false)
+                    try {
+                        speak("Got it!")
+                    } catch {
+                        console.log('Speech failed, continuing anyway')
+                    }
+                    
+                    if (isInterviewMode) {
+                        setTimeout(() => {
+                            if (currentStep === 6) {
+                                subStep < 3 ? setSubStep(prev => prev + 1) : handleNext()
+                            } else {
+                                handleNext()
+                            }
+                        }, 1000)
+                    }
+                    
+                    setAiProcessing(false)
+                    resetTranscript()
+                    return
+                }
+            }
+            
+            setLastError(`API Error: ${error.message || 'Server unavailable'}`)
+            try {
+                speak("Sorry, there's an issue with the server. Please say it again.")
+            } catch {
+                console.log('Speech synthesis also failed')
+            }
+            
             setAiProcessing(false)
             resetTranscript()
         }
@@ -260,10 +687,20 @@ export default function Onboarding() {
             setSubStep(prev => prev + 1)
             return
         }
+        
+        if (currentStep === 2 && isInterviewMode && subStep < 1) {
+            setSubStep(prev => prev + 1)
+            return
+        }
+        
+        if (currentStep === 6 && isInterviewMode && subStep < 3) {
+            setSubStep(prev => prev + 1)
+            return
+        }
 
         if (currentStep < 6) {
             setCurrentStep(prev => prev + 1)
-            if (currentStep + 1 === 1) setSubStep(0)
+            if (currentStep + 1 === 1 || currentStep + 1 === 2 || currentStep + 1 === 6) setSubStep(0)
         } else {
             finishOnboarding()
         }
@@ -345,7 +782,7 @@ export default function Onboarding() {
                             opacity: 0.2
                         }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-blue-900/50 to-transparent" />
                 </div>
 
                 {/* AI Intro Card */}
@@ -363,7 +800,7 @@ export default function Onboarding() {
                             {/* Avatar Circle with Glow */}
                             <div className="relative w-40 h-40 mb-6">
                                 <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse" />
-                                <div className="absolute -inset-2 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-full opacity-20 blur-lg" />
+                                <div className="absolute -inset-2 bg-linear-to-tr from-blue-500 to-purple-500 rounded-full opacity-20 blur-lg" />
                                 <div className="relative w-full h-full rounded-full border-4 border-white shadow-xl overflow-hidden bg-white flex items-center justify-center">
                                     {/* Using a placeholder eye/lens conceptual image */}
                                     <img
@@ -396,7 +833,7 @@ export default function Onboarding() {
                             </div>
 
                             <h2 className="text-3xl font-bold text-slate-900 leading-tight mb-2">
-                                Let's calibrate your profile for <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">AI Counsellor</span>
+                                Let's calibrate your profile for <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-600">AI Counsellor</span>
                             </h2>
 
                             <div className="mt-8 relative">
@@ -452,7 +889,7 @@ export default function Onboarding() {
                             opacity: 0.2
                         }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-blue-900/50 to-transparent" />
                 </div>
 
                 {/* Selection Card */}
@@ -602,9 +1039,19 @@ export default function Onboarding() {
                             <h2 className="text-3xl font-semibold tracking-tight leading-relaxed">
                                 {isListening && transcript
                                     ? `"${transcript}"`
-                                    : (currentStep === 1
-                                        ? (subStep === 0 ? "Let's start! What is your full name?" : subStep === 1 ? "Great! And what is your email address?" : "Finally for this section, what is your phone number?")
-                                        : STEPS[currentStep - 1].question)
+                                    : currentStep === 1
+                                        ? (subStep === 0 ? "Let's start! What is your full name?" 
+                                           : subStep === 1 ? "Great! And what is your email address?" 
+                                           : "Finally for this section, what is your phone number?")
+                                        : currentStep === 2
+                                        ? (subStep === 0 ? "What is your highest completed degree? For example, Bachelor's, Master's, or BTech."
+                                           : "What degree do you want to pursue next, and in which field? For example, Master's in Computer Science.")
+                                        : currentStep === 6
+                                        ? (subStep === 0 ? "Do you have your passport ready? Say yes or no." 
+                                           : subStep === 1 ? "Do you have your academic transcripts? Say yes or no."
+                                           : subStep === 2 ? "Do you have your Statement of Purpose? Say yes or no."
+                                           : "Do you have your Letters of Recommendation? Say yes or no.")
+                                        : STEPS[currentStep - 1].question
                                 }
                             </h2>
                             {lastError && (

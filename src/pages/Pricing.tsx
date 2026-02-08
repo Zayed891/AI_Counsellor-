@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Check, Shield, Zap, Sparkles, HelpCircle, ArrowRight } from 'lucide-react'
+import { Check, Sparkles, HelpCircle, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Navbar from '@/components/Navbar'
 
@@ -8,6 +8,7 @@ export default function Pricing() {
         {
             name: 'Explorer',
             price: '$0',
+            period: '/forever',
             description: 'Perfect for getting started with your university search.',
             features: [
                 '5 AI Counselor chats per day',
@@ -39,7 +40,7 @@ export default function Pricing() {
         {
             name: 'Premium Guidance',
             price: '$199',
-            period: ' one-time',
+            period: '/one-time',
             description: 'Human expertise combined with AI power.',
             features: [
                 'Everything in Pro Student',
@@ -74,103 +75,129 @@ export default function Pricing() {
     ]
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
+        <div className="min-h-screen bg-gray-50">
             <Navbar variant="light" />
 
             {/* Hero Section */}
-            <div className="relative pt-32 pb-20 px-6 sm:px-10 lg:px-16 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-white pointer-events-none" />
-                <div className="max-w-7xl mx-auto text-center relative z-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 text-sm font-medium mb-6">
-                        <Sparkles size={16} />
-                        <span>Invest in your future</span>
-                    </div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight mb-6">
-                        Simple pricing for <span className="text-indigo-600">limitless potential</span>
+            <section className="pt-32 pb-20 px-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-br from-indigo-50 via-white to-purple-50" />
+                <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-indigo-100 rounded-full blur-[100px] opacity-50" />
+
+                <div className="max-w-6xl mx-auto text-center relative z-10">
+                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-700 text-sm font-medium rounded-full mb-6">
+                        <Sparkles size={14} /> Invest in your future
+                    </span>
+
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                        Simple pricing for
+                        <br />
+                        <span className="text-gray-400">limitless potential</span>
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-10">
+
+                    <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
                         Choose the plan that fits your journey. From exploring options to submitting that final application, we've got you covered.
                     </p>
                 </div>
-            </div>
+            </section>
 
             {/* Pricing Cards */}
-            <div className="px-6 pb-24">
-                <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8">
-                    {tiers.map((tier) => (
-                        <div
-                            key={tier.name}
-                            className={`relative rounded-2xl p-8 transition-all duration-300 ${tier.highlighted
-                                    ? 'bg-gray-900 text-white shadow-2xl scale-105 border-0 ring-1 ring-white/10'
-                                    : 'bg-white text-gray-900 shadow-xl border border-gray-100 hover:border-indigo-100 hover:shadow-2xl'
-                                }`}
-                        >
-                            {tier.highlighted && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white px-4 py-1 rounded-full text-sm font-medium shadow-md">
-                                    Most Popular
-                                </div>
-                            )}
-
-                            <div className="mb-6">
-                                <h3 className={`text-xl font-bold mb-2 ${tier.highlighted ? 'text-white' : 'text-gray-900'}`}>{tier.name}</h3>
-                                <p className={`text-sm ${tier.highlighted ? 'text-gray-300' : 'text-gray-500'}`}>{tier.description}</p>
-                            </div>
-
-                            <div className="mb-8">
-                                <span className="text-4xl font-bold tracking-tight">{tier.price}</span>
-                                {tier.period && (
-                                    <span className={`text-sm font-medium ${tier.highlighted ? 'text-gray-400' : 'text-gray-500'}`}>
-                                        {tier.period}
-                                    </span>
-                                )}
-                            </div>
-
-                            <ul className="space-y-4 mb-8">
-                                {tier.features.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-3">
-                                        <Check
-                                            className={`w-5 h-5 mt-0.5 shrink-0 ${tier.highlighted ? 'text-indigo-400' : 'text-indigo-600'
-                                                }`}
-                                        />
-                                        <span className={`text-sm ${tier.highlighted ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            {feature}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-
-                            <Button
-                                asChild
-                                className={`w-full h-12 rounded-xl text-base font-medium transition-all ${tier.highlighted
-                                        ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/25 shadow-lg'
-                                        : 'bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200'
-                                    }`}
-                            >
-                                <Link to={tier.ctaLink}>
-                                    {tier.cta}
-                                </Link>
-                            </Button>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* FAQ Section */}
-            <div className="bg-white py-24 px-6 border-t border-gray-100">
-                <div className="max-w-3xl mx-auto">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
-                        <p className="text-gray-600">Everything you need to know about our plans and billing.</p>
+            <section className="py-20 px-6">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-12">
+                        <span className="text-sm font-medium text-indigo-600 uppercase tracking-wider">
+                            Pricing
+                        </span>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-3">
+                            Choose Your Plan
+                        </h2>
                     </div>
 
-                    <div className="space-y-8">
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {tiers.map((tier) => (
+                            <div
+                                key={tier.name}
+                                className={`relative rounded-2xl p-8 transition-all duration-300 ${tier.highlighted
+                                        ? 'bg-gray-900 shadow-xl transform md:-translate-y-4'
+                                        : 'bg-white shadow-sm border border-gray-200 hover:shadow-lg'
+                                    }`}
+                            >
+                                {tier.highlighted && (
+                                    <div className="absolute top-0 center-0 transform -translate-y-1/2 bg-indigo-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
+                                        Most Popular
+                                    </div>
+                                )}
+
+                                <h3 className={`text-xl font-bold mb-2 ${tier.highlighted ? 'text-white' : 'text-gray-900'}`}>
+                                    {tier.name}
+                                </h3>
+
+                                <div className="mb-6">
+                                    <span className={`text-4xl font-bold ${tier.highlighted ? 'text-white' : 'text-gray-900'}`}>
+                                        {tier.price}
+                                    </span>
+                                    <span className={`text-sm ${tier.highlighted ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        {tier.period}
+                                    </span>
+                                </div>
+
+                                <p className={`text-sm mb-8 ${tier.highlighted ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {tier.description}
+                                </p>
+
+                                <ul className="space-y-4 mb-8">
+                                    {tier.features.map((feature) => (
+                                        <li key={feature} className="flex items-start gap-3">
+                                            <Check
+                                                className={`w-5 h-5 shrink-0 ${tier.highlighted ? 'text-indigo-400' : 'text-indigo-600'}`}
+                                            />
+                                            <span className={`text-sm ${tier.highlighted ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                {feature}
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <Link
+                                    to={tier.ctaLink}
+                                    className={`block w-full py-3 text-center font-medium rounded-xl transition-colors ${tier.highlighted
+                                            ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/25'
+                                            : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                                        }`}
+                                >
+                                    {tier.cta}
+                                </Link>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="py-20 px-6 bg-white border-t border-gray-200">
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-16">
+                        <span className="text-sm font-medium text-indigo-600 uppercase tracking-wider">
+                            FAQs
+                        </span>
+                        <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mt-3 mb-4">
+                            Frequently Asked Questions
+                        </h2>
+                        <p className="text-lg text-gray-600">
+                            Everything you need to know about our plans and billing.
+                        </p>
+                    </div>
+
+                    <div className="space-y-6">
                         {faqs.map((faq, index) => (
-                            <div key={index} className="bg-gray-50 rounded-2xl p-6 md:p-8 hover:bg-gray-100 transition-colors">
+                            <div
+                                key={index}
+                                className="bg-gray-50 rounded-2xl p-6 border border-gray-200 hover:border-indigo-200 hover:bg-indigo-50/50 transition-colors"
+                            >
                                 <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-start gap-3">
-                                    <HelpCircle className="w-5 h-5 text-indigo-600 mt-1 shrink-0" />
+                                    <HelpCircle className="w-5 h-5 text-indigo-600 mt-0.5 shrink-0" />
                                     {faq.q}
                                 </h3>
-                                <p className="text-gray-600 ml-8 leading-relaxed">
+                                <p className="text-sm text-gray-600 ml-8 leading-relaxed">
                                     {faq.a}
                                 </p>
                             </div>
@@ -181,33 +208,33 @@ export default function Pricing() {
                         <p className="text-gray-600 mb-4">Still have questions?</p>
                         <Link
                             to="/signup"
-                            className="inline-flex items-center gap-2 text-indigo-600 font-semibold hover:text-indigo-700 hover:underline"
+                            className="inline-flex items-center gap-2 text-indigo-600 font-medium hover:text-indigo-800"
                         >
                             Contact our support team <ArrowRight size={16} />
                         </Link>
                     </div>
                 </div>
-            </div>
+            </section>
 
             {/* Footer CTA */}
-            <div className="bg-gray-900 py-16 px-6 text-center">
-                <div className="max-w-4xl mx-auto">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                        Start your journey today
+            <section className="py-20 px-6 bg-gray-900 relative overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-r from-indigo-600/20 to-purple-600/20 blur-[100px]" />
+
+                <div className="max-w-4xl mx-auto text-center relative z-10">
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+                        Ready to Start?
                     </h2>
-                    <p className="text-gray-400 mb-8 max-w-2xl mx-auto text-lg">
-                        Join thousands of students getting into their dream universities with AI guidance.
+                    <p className="text-lg text-gray-400 mb-10 max-w-xl mx-auto">
+                        Join thousands of students who found their dream university with AI Counsellor
                     </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link
-                            to="/signup"
-                            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 text-white text-lg font-medium rounded-xl hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20"
-                        >
-                            Get Started for Free
-                        </Link>
-                    </div>
+                    <Link
+                        to="/signup"
+                        className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 text-lg font-medium rounded-xl hover:bg-gray-100 transition-colors"
+                    >
+                        Create Free Account <ArrowRight size={20} />
+                    </Link>
                 </div>
-            </div>
+            </section>
         </div>
     )
 }
